@@ -11,8 +11,8 @@ export interface Workflow {
 
 export interface Step {
   chain_id: string
-  to: string
-  value: string
-  data: string
+  to?: string
+  value?: string
+  data?: string
   description: string
 }

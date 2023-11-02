@@ -72,7 +72,7 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
           // default:
           //   return throwError(() => 'UNHANDLED_SWITCH_CHAIN_ERROR')
           default:
-            return this.addEthereumChain().pipe(
+            return this.addEthereumChain(opts).pipe(
               concatMap(() => this.checkChainID(opts)),
             )
         }
@@ -103,10 +103,10 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
     )
   }
 
-  private addEthereumChain() {
+  private addEthereumChain(opts: MetamaskLoginOpts) {
     return from(this.subprovider.getSigner()).pipe(
       switchMap(signer => signer.provider.send('wallet_addEthereumChain',
-        [MetamaskNetworks[signer.provider._network.chainId.toString()]])),
+        [MetamaskNetworks[opts.wantedNetworkChainID!.toString()]])),
       concatMap(addChainResult => addChainResult === null ?
         of(addChainResult) : throwError(() => 'CANNOT_CHANGE_NETWORK')))
   }

@@ -85,5 +85,5 @@ export const Networks: { [key in ChainID]: Network } = {
   [ChainID.SEPOLIA_TESTNET]: SepoliaNetwork,
   [ChainID.ETHEREUM_MAINNET]: EthereumNetwork,
   [ChainID.MANTLE_MAINNET]: MantleNetwork,
-  [ChainID.MANTLE_TESTNET]: MantleTestnetNetwork
+  [ChainID.MANTLE_TESTNET]: MantleTestnetNetwork,
 }

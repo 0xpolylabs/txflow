@@ -13,9 +13,9 @@ export const Workflow = t.iface([], {
 
 export const Step = t.iface([], {
   "chain_id": "string",
-  "to": "string",
-  "value": "string",
-  "data": "string",
+  "to": t.opt("string"),
+  "value": t.opt("string"),
+  "data": t.opt("string"),
   "description": "string",
 });
 

@@ -12,7 +12,7 @@ import { PreferenceService } from '../../store/preference.service'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { DialogService } from '../../shared/services/dialog.service'
 import { ChainID, Networks } from '../../shared/utils/networks'
-import { TransactionRequest } from 'ethers'
+import { TransactionRequest, ZeroAddress } from 'ethers'
 import { ErrorService } from '../../shared/services/error.service'
 import { Payload, UserFlowStateService, UserSteps } from '../../store/user-flow-state'
 import { ExplorerLinkComponent } from '../../shared/components/explorer-link/explorer-link.component'
@@ -68,9 +68,9 @@ export class WorkflowStepComponent {
         switchMap(signer => {
           const tx = {
             chainId: step.chain_id,
-            to: step.to,
-            value: step.value,
-            data: step.data,
+            to: step.to || ZeroAddress,
+            ...(step.value ? {value: step.value} : {}),
+            ...(step.data ? {data: step.data} : {}),
           } as TransactionRequest
 
           return this.dialogService.waitingApproval(from(signer.sendTransaction(tx))).pipe(
