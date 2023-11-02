@@ -1,0 +1,28 @@
+{
+  "template_version": "1",
+  "workflow_name": "Example workflow",
+  "workflow_description": "Mints and stakes the test token on Sepolia network.",
+  "steps": [
+    {
+      "chain_id": "11155111",
+      "to": "0x3c250c76DAF9161c1e80E62245797134331906F9",
+      "value": "0x0",
+      "data": "0xa0712d680000000000000000000000000000000000000000000000000de0b6b3a7640000",
+      "description": "Mint 1 Test Token"
+    },
+    {
+      "chain_id": "11155111",
+      "to": "0x3c250c76DAF9161c1e80E62245797134331906F9",
+      "value": "0x0",
+      "data": "0x095ea7b3000000000000000000000000d344ec3f3ca06d70d8b06208b71d7d12a30bc9620000000000000000000000000000000000000000000000000de0b6b3a7640000",
+      "description": "Approve 1 Test Token for staking"
+    },
+    {
+      "chain_id": "11155111",
+      "to": "0xD344Ec3f3CA06d70d8b06208B71D7D12A30bc962",
+      "value": "0x0",
+      "data": "0xa694fc3a0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+      "description": "Stake 1 Test Token"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+// START Material
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$my-primary: mat.define-palette(mat.$grey-palette, 600);
+$my-accent: mat.define-palette(mat.$grey-palette, A200, A100, A400);
+$my-typography: mat.define-typography-config(
+    $font-family: ['Manrope', 'sans-serif']
+);
+$my-theme: mat.define-light-theme(
+        (
+            color: (
+                primary: $my-primary,
+                accent: $my-accent,
+            ),
+            typography: $my-typography,
+        )
+);
+
+//@include mat.all-component-themes($my-theme);
+
+@include mat.button-theme($my-theme);
+@include mat.dialog-theme($my-theme);
+@include mat.tooltip-theme($my-theme);
+@include mat.expansion-theme($my-theme);
+
+// Add custom Angular Material overrides here.
+// END Material
+
+
+// START Tailwind
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+// Add custom Tailwind styles here
+
+@layer components {
+  .btn {
+    @apply inline-block px-4 py-2 text-sm font-medium leading-5 text-center text-white transition duration-150 ease-in-out bg-gray-600 border border-transparent rounded-md shadow-sm hover:bg-gray-500 active:bg-gray-700 disabled:bg-gray-400;
+  }
+
+  .btn-light {
+    @apply inline-block px-4 py-2 text-sm font-medium leading-5 text-center text-gray-700 transition duration-150 ease-in-out bg-white border border-gray-300 rounded-md shadow-sm hover:text-gray-500 active:text-gray-800 disabled:text-gray-400;
+  }
+}
+
+// END Tailwind
