@@ -17,6 +17,12 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
   standalone: true,
   imports: [CommonModule, RouterModule, AddrShortPipe, ExplorerLinkComponent, NetworkPipe, ValueCopyComponent, AsyncActionModule],
   template: `
+      <div class="bg-gray-200">
+          <p class="text-sm leading-tight max-w-screen-md mx-auto px-4 py-2">
+              Check out <a class="underline" href="https://txflow.gitbook.io/docs" target="_blank">docs</a> for more
+              information.
+          </p>
+      </div>
       <div class="max-w-screen-md mx-auto px-4 py-2">
           <nav class="flex justify-between items-center">
               <a routerLink="/" class="text-xl font-bold">
