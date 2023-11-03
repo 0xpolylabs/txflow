@@ -73,10 +73,7 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
           // default:
           //   return throwError(() => 'UNHANDLED_SWITCH_CHAIN_ERROR')
           default:
-            return this.addEthereumChain(opts).pipe(
-              concatMap(() => this.checkChainID(opts)),
-            )
-        }
+            return this.addEthereumChain(opts)        }
       }),
     ).pipe(catchError(() => throwError(() => 'CANNOT_SWITCH_CHAIN')))
   }
@@ -135,8 +132,8 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
 
 interface MetamaskLoginOpts extends SignerLoginOpts {
   wallet?: string;
-  avoidNetworkChange?: boolean;
   wantedNetworkChainID?: bigint;
+  avoidNetworkChange?: boolean;
 }
 
 /**

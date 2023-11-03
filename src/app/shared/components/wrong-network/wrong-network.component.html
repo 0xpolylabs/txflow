@@ -1,7 +1,7 @@
 <div class="max-w-sm px-4 py-2">
     <div class="mt-4 px-4">
         <h1 class="text-2xl text-center">
-            Wrong network detected
+            Network switch required
         </h1>
     </div>
 
@@ -10,18 +10,18 @@
             <ng-container *ngIf="(currentNetwork$ | async) as currentNetwork">
                 You are currently connected to network
                 <span class="font-semibold">
-          {{ currentNetwork.name ?? '' }}
-        </span>
+                    {{ currentNetwork.name ?? '' }}
+                </span>
                 <span class="bg-gray-200 px-1 py-0.5 text-xs rounded-full">
-          {{ currentNetwork.chainID }}</span>.
+                    {{ currentNetwork.chainID }}</span>.
             </ng-container>
             If you want to proceed, switch the network to
             <ng-container *ngIf="(requestedNetwork$ | async) as requestedNetwork">
-        <span class="font-semibold">
-          {{ requestedNetwork.name }}
-        </span>
+                <span class="font-semibold">
+                    {{ requestedNetwork.name }}
+                </span>
                 <span class="bg-gray-200 px-1 py-0.5 text-xs rounded-full">
-          {{ requestedNetwork.chainID }}</span>
+                    {{ requestedNetwork.chainID }}</span>
             </ng-container>
             .
         </p>

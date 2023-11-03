@@ -50,16 +50,23 @@ export class WrongNetworkComponent {
   readonly dismissDialog$ = combineLatest([
     this.currentNetwork$,
     of(this.matDialogData.chainID),
+    this.sessionService.signer$,
   ]).pipe(
-    tap(([currentNetwork, wantedNetwork]) => {
-      if (currentNetwork && currentNetwork.chainID!.toString() === wantedNetwork) this.dialogRef.close(true)
+    tap(([currentNetwork, wantedNetwork, signer]) => {
+      if (!signer) {
+        this.dialogRef.close(false)
+        return
+      }
+
+      if (currentNetwork && currentNetwork.chainID!.toString() === wantedNetwork) {
+        this.dialogRef.close(true)
+        return
+      }
     }),
   )
 
   logout$ = () => {
-    return this.signerService.logout().pipe(
-      tap(() => this.dialogRef.close(false)),
-    )
+    return this.signerService.logout()
   }
 
   changeNetwork$ = (chainID: number) => {

@@ -1,6 +1,6 @@
-import { inject, Injectable } from '@angular/core'
+import { inject, Injectable, NgZone } from '@angular/core'
 import { Observable, of, throwError } from 'rxjs'
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog'
+import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material/dialog'
 import {
   DialogIcon,
   InfoDialogComponent,
@@ -17,13 +17,13 @@ import {
   LoadingDialogTransactionComponent,
   LoadingDialogTransactionData,
 } from '../components/loading-dialog/loading-dialog-transaction/loading-dialog-transaction.component'
-import { LoadingOverlayComponent } from '../components/loading-dialog/loading-overlay/loading-overlay.component'
 import { Network } from '../utils/networks'
 
 @Injectable({
   providedIn: 'root',
 })
 export class DialogService {
+  private readonly ngZone = inject(NgZone)
   readonly dialog = inject(MatDialog)
 
   readonly configDefaults: Partial<MatDialogConfig> = {
@@ -95,25 +95,17 @@ export class DialogService {
     )
   }
 
-  overlayLoading<T>(obs$: Observable<T>): Observable<T> {
-    const dialogRef = this.dialog.open(LoadingOverlayComponent, {
-      width: '100vw',
-      maxWidth: '100vw',
-      height: '100vh',
-      disableClose: true,
-    })
-
-    return obs$.pipe(
-      finalize(() => dialogRef.close()),
-    )
-  }
-
   waitingApproval<T>(obs$: Observable<T>, title?: string, message?: string, opts?: MatDialogConfig): Observable<T> {
-    const dialogRef = this.dialog.open(LoadingDialogApprovalComponent, {
-      ...this.configDefaults,
-      ...opts,
-      data: {title, message} as LoadingDialogApprovalData,
-      disableClose: true,
+    let dialogRef: MatDialogRef<LoadingDialogApprovalComponent>
+    this.ngZone.run(() => {
+      // running opening dialog in zone to avoid issue with rendering
+      // https://stackoverflow.com/questions/56470620/ngoninit-not-firing-when-opening-dialog
+      dialogRef = this.dialog.open(LoadingDialogApprovalComponent, {
+        ...this.configDefaults,
+        ...opts,
+        data: {title, message} as LoadingDialogApprovalData,
+        disableClose: true,
+      })
     })
 
     return obs$.pipe(
@@ -130,10 +122,13 @@ export class DialogService {
     opts?: MatDialogConfig
   }): Observable<T> {
     const {obs$, network, tx, title, message, opts} = data
-    const dialogRef = this.dialog.open(LoadingDialogTransactionComponent, {
-      ...this.configDefaults,
-      ...opts,
-      data: {network, tx, title, message} as LoadingDialogTransactionData,
+    let dialogRef: MatDialogRef<LoadingDialogTransactionComponent>
+    this.ngZone.run(() => {
+      dialogRef = this.dialog.open(LoadingDialogTransactionComponent, {
+        ...this.configDefaults,
+        ...opts,
+        data: {network, tx, title, message} as LoadingDialogTransactionData,
+      })
     })
 
     return obs$.pipe(

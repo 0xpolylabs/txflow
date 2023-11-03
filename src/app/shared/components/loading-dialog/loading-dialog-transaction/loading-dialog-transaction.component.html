@@ -1,29 +1,27 @@
-<ng-container *ngIf="(data$ | async) as data">
-    <div class="px-8 py-8 max-w-sm mx-auto">
-        <h3 class="text-center text-2xl font-medium">
-            {{ data.title }}
-        </h3>
+<div class="px-8 py-8 max-w-sm mx-auto">
+    <h3 class="text-center text-2xl font-medium">
+        {{ data.title ? data.title : 'Processing...' }}
+    </h3>
 
-        <div class="flex justify-center mt-6">
-            <div class="flex justify-center w-36 h-36">
-                <div class="flex justify-center w-24 h-24">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                         stroke="currentColor" class="w-full h-full">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
-                    </svg>
-                </div>
+    <div class="flex justify-center mt-6">
+        <div class="flex justify-center w-36 h-36">
+            <div class="flex justify-center w-24 h-24">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                     stroke="currentColor" class="w-full h-full">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
+                </svg>
             </div>
         </div>
-
-        <p *ngIf="data.message"
-           class="text-center text-sm mt-4">
-            {{ data.message }}
-        </p>
-
-        <div *ngIf="data.tx && data.network" class="text-center text-sm mt-4">
-            View transaction on explorer
-            <app-explorer-link [network]="data.network" [value]="data.tx" type="tx" class="ml-1"/>
-        </div>
     </div>
-</ng-container>
+
+    <p *ngIf="data.message"
+       class="text-center text-sm mt-4">
+        {{ data.message }}
+    </p>
+
+    <div *ngIf="data.tx && data.network" class="text-center text-sm mt-4">
+        View transaction on explorer
+        <app-explorer-link [network]="data.network" [value]="data.tx" type="tx" class="ml-1"/>
+    </div>
+</div>

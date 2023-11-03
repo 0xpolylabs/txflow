@@ -26,7 +26,7 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
               </svg>
               <span *ngIf="stateTexts[state!]" class="ml-2 font-semibold">
                   {{ stateTexts[state!] }}
-                </span>
+              </span>
           </ng-template>
       </button>
   `,
@@ -35,7 +35,7 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
   imports: [CommonModule, MatTooltipModule, AsyncActionModule],
 })
 export class ValueCopyComponent implements OnInit {
-  @Input() value = ''
+  @Input({required: true}) value = ''
   @Input() delay = 1000
   @Input() textReady = ''
   @Input() textCopied = ''
@@ -45,9 +45,6 @@ export class ValueCopyComponent implements OnInit {
 
   stateSub = new BehaviorSubject<State>(State.READY)
   state$ = this.stateSub.asObservable()
-
-  constructor() {
-  }
 
   ngOnInit() {
     this.stateTexts = {

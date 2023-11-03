@@ -12,7 +12,7 @@ import { PreferenceService } from '../../store/preference.service'
 import { toObservable } from '@angular/core/rxjs-interop'
 import { DialogService } from '../../shared/services/dialog.service'
 import { ChainID, Networks } from '../../shared/utils/networks'
-import { TransactionRequest, ZeroAddress } from 'ethers'
+import { TransactionRequest } from 'ethers'
 import { ErrorService } from '../../shared/services/error.service'
 import { Payload, UserFlowStateService, UserSteps } from '../../store/user-flow-state'
 import { ExplorerLinkComponent } from '../../shared/components/explorer-link/explorer-link.component'
@@ -21,6 +21,7 @@ import { AddrShortPipe } from '../../shared/pipes/addr-short.pipe'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
+import { SessionService } from '../../store/session.service'
 
 @Component({
   selector: 'app-workflow-step',
@@ -37,6 +38,7 @@ export class WorkflowStepComponent {
   private readonly workflowService = inject(WorkflowService)
   private readonly signerService = inject(SignerService)
   private readonly preferenceService = inject(PreferenceService)
+  private readonly sessionService = inject(SessionService)
   private readonly cdr = inject(ChangeDetectorRef)
   private readonly dialogService = inject(DialogService)
   private readonly errorService = inject(ErrorService)
@@ -68,11 +70,9 @@ export class WorkflowStepComponent {
         switchMap(signer => {
           const tx = {
             chainId: step.chain_id,
-            to: step.to,
-            value: step.value || "0x0",
-            data: step.data || "0x",
-            // ...(step.value ? {value: step.value} : {}),
-            // ...(step.data ? {data: step.data} : {}),
+            ...(step.to ? {to: step.to} : {}),
+            ...(step.value ? {value: step.value} : {}),
+            ...(step.data ? {data: step.data} : {}),
           } as TransactionRequest
 
           return this.dialogService.waitingApproval(from(signer.sendTransaction(tx))).pipe(
@@ -127,9 +127,11 @@ export class WorkflowStepComponent {
   stepResult$ = combineLatest([
     this.currentStoreStep$,
     this.signerService.chainChanged$.pipe(startWith(undefined)),
+    this.sessionService.signer$,
   ]).pipe(
-    switchMap(([currentStep]) => {
-      if (!currentStep) return of(undefined)
+    switchMap(([currentStep, _chainChange, signer]) => {
+      if (!currentStep || !signer) return of(undefined)
+
       const tx = currentStep.txHash
       if (!tx) return of(undefined)
 

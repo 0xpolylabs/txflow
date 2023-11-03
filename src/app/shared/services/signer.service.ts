@@ -1,6 +1,6 @@
 import { DestroyRef, inject, Injectable, NgZone } from '@angular/core'
 import { defer, from, fromEvent, merge, Observable, of, ReplaySubject, take, takeWhile, throwError, timer } from 'rxjs'
-import { concatMap, finalize, map, switchMap, tap } from 'rxjs/operators'
+import { concatMap, delay, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { DialogService } from './dialog.service'
 import { GetSignerOptions, SignerLoginOpts, Subsigner } from './signer-login-options'
 import { WINDOW } from '../providers/browser.provider'
@@ -108,7 +108,6 @@ export class SignerService {
       WrongNetworkComponent, WrongNetworkComponentData
     >(WrongNetworkComponent, {
       ...this.dialogService.configDefaults,
-      disableClose: true,
       data: {
         chainID: chainID.toString(),
       },

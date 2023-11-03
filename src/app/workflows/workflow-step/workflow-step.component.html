@@ -55,8 +55,8 @@
 
                 <div class="" *ngIf="(currentStoreStep$ | async)?.txHash as stepTx">
                     <div class="h-px w-full bg-gray-300 my-2"></div>
-                    <p class="mt-2">
-                        Transaction: {{ stepTx | addrShort }}
+                    <p class="mt-2 flex gap-0.5">
+                        <span>Transaction: {{ stepTx | addrShort }}</span>
                         <app-value-copy [value]="stepTx"/>
                         <app-explorer-link *ngIf="(step.chain_id | network) as network"
                                            [network]="network" type="tx"
