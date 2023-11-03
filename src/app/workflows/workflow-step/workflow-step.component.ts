@@ -68,9 +68,11 @@ export class WorkflowStepComponent {
         switchMap(signer => {
           const tx = {
             chainId: step.chain_id,
-            to: step.to || ZeroAddress,
-            ...(step.value ? {value: step.value} : {}),
-            ...(step.data ? {data: step.data} : {}),
+            to: step.to,
+            value: step.value || "0x0",
+            data: step.data || "0x",
+            // ...(step.value ? {value: step.value} : {}),
+            // ...(step.data ? {data: step.data} : {}),
           } as TransactionRequest
 
           return this.dialogService.waitingApproval(from(signer.sendTransaction(tx))).pipe(

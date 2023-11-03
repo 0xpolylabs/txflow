@@ -1,5 +1,6 @@
 export enum ChainID {
   ETHEREUM_MAINNET = 1,
+  GOERLI_TESTNET = 5,
   SEPOLIA_TESTNET = 11155111,
   MANTLE_MAINNET = 5000,
   MANTLE_TESTNET = 5001,
@@ -49,6 +50,22 @@ export const MantleTestnetNetwork: Network = {
   explorerURLs: ['https://explorer.testnet.mantle.xyz/'],
 }
 
+export const GoerliNetwork: Network = {
+  chainID: ChainID.GOERLI_TESTNET,
+  name: 'Görli (testnet)',
+  shortName: 'goerli',
+  nativeCurrency: {
+    name: 'ETH',
+    symbol: 'ETH',
+  },
+  maxGasPrice: 20,
+  rpcURLs: ['https://ethereum-goerli.publicnode.com'],
+  wssRpcURLs: [
+    'wss://ethereum-goerli.publicnode.com',
+  ],
+  explorerURLs: ['https://goerli.etherscan.io/'],
+}
+
 export const SepoliaNetwork: Network = {
   chainID: ChainID.SEPOLIA_TESTNET,
   name: 'Sepolia (testnet)',
@@ -83,6 +100,7 @@ export const EthereumNetwork: Network = {
 
 export const Networks: { [key in ChainID]: Network } = {
   [ChainID.SEPOLIA_TESTNET]: SepoliaNetwork,
+  [ChainID.GOERLI_TESTNET]: GoerliNetwork,
   [ChainID.ETHEREUM_MAINNET]: EthereumNetwork,
   [ChainID.MANTLE_MAINNET]: MantleNetwork,
   [ChainID.MANTLE_TESTNET]: MantleTestnetNetwork,
