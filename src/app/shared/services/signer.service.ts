@@ -1,5 +1,5 @@
 import { DestroyRef, inject, Injectable, NgZone } from '@angular/core'
-import { defer, from, fromEvent, merge, Observable, of, ReplaySubject, take, throwError } from 'rxjs'
+import { defer, from, fromEvent, merge, Observable, of, ReplaySubject, take, takeWhile, throwError, timer } from 'rxjs'
 import { concatMap, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { DialogService } from './dialog.service'
 import { GetSignerOptions, SignerLoginOpts, Subsigner } from './signer-login-options'
@@ -11,6 +11,12 @@ import { BytesLike, JsonRpcApiProvider, JsonRpcSigner, TransactionRequest, Trans
 import { WrongNetworkComponent, WrongNetworkComponentData } from '../components/wrong-network/wrong-network.component'
 import { PreferenceService } from '../../store/preference.service'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +30,7 @@ export class SignerService {
   private readonly preferenceService = inject(PreferenceService)
   private readonly destroyRef = inject(DestroyRef)
 
-  injectedWeb3$: Observable<any> = defer(() => of((this.window as any)?.ethereum))
+  injectedWeb3$: Observable<any> = defer(() => of(this.window.ethereum))
 
   private subsigner?: Subsigner<any>
   private accountsChangedSub = new ReplaySubject<string[]>(1)
@@ -37,18 +43,20 @@ export class SignerService {
   disconnected$ = this.disconnectedSub.asObservable()
 
   listeners$ = this.listenersSub.asObservable().pipe(
-    switchMap(provider => merge(
-      fromEvent<string[]>((this.window as any).ethereum, 'accountsChanged').pipe(
-        map(accounts => {
-          this.accountsChangedSub.next(accounts)
-        }),
-      ),
-      fromEvent<string>((this.window as any).ethereum, 'chainChanged').pipe(
-        switchMap(chainID => from(this.sessionService.signer!.provider.getNetwork()).pipe(
-          tap(() => this.chainChangedSub.next(chainID)),
+    switchMap(() => merge(
+      fromEvent<string>(this.window.ethereum, 'chainChanged').pipe(
+        switchMap(chainID => timer(200, 0).pipe(
+          switchMap(() => from(this.sessionService.signer!.provider.getNetwork())),
+          takeWhile(network => network.chainId.toString() !== chainID),
+          map(() => chainID),
+          take(1),
         )),
+        tap(chainID => this.chainChangedSub.next(chainID)),
       ),
-      fromEvent<void>((this.window as any).ethereum, 'disconnect').pipe(
+      fromEvent<string[]>(this.window.ethereum, 'accountsChanged').pipe(
+        tap(accounts => this.accountsChangedSub.next(accounts)),
+      ),
+      fromEvent<void>(this.window.ethereum, 'disconnect').pipe(
         map(() => this.disconnectedSub.next()),
       ),
     )),
@@ -102,7 +110,7 @@ export class SignerService {
       ...this.dialogService.configDefaults,
       disableClose: true,
       data: {
-        chainID,
+        chainID: chainID.toString(),
       },
     }).afterClosed().pipe(
       switchMap(changeNetworkCompleted => changeNetworkCompleted ?

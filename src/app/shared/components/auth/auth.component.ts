@@ -24,7 +24,7 @@ export class AuthComponent {
   private readonly preferenceService = inject(PreferenceService)
   private readonly dialogRef = inject(MatDialogRef<AuthComponent>, {optional: true})
 
-  injectedWeb3$: Observable<any> = defer(() => of((this.window as any)?.ethereum))
+  browserProvider$: Observable<any> = defer(() => of(this.window.ethereum))
 
   afterLoginActions() {
     this.dialogRef?.close(true)

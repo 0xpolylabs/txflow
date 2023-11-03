@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
 import { combineLatest, from, merge, Observable, of, shareReplay } from 'rxjs'
-import { map, tap } from 'rxjs/operators'
+import { distinctUntilChanged, map, tap } from 'rxjs/operators'
 import { ChainID, Network, Networks } from '../../utils/networks'
 import { SignerService } from '../../services/signer.service'
 import { SessionService } from '../../../store/session.service'
@@ -26,12 +26,12 @@ export class WrongNetworkComponent {
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly dialogRef = inject(MatDialogRef<WrongNetworkComponent>)
   private readonly matDialogData: WrongNetworkComponentData = inject(MAT_DIALOG_DATA)
-  private readonly cdr = inject(ChangeDetectorRef)
 
   currentNetwork$: Observable<Partial<Network> | undefined> = merge(
     this.signerService.chainChanged$,
     from(this.sessionService.signer!.provider.getNetwork()).pipe(map(net => net.chainId)),
   ).pipe(
+    distinctUntilChanged(),
     map(chainId => Networks[Number(chainId) as ChainID] || {chainID: Number(chainId)} as Network),
     shareReplay({bufferSize: 1, refCount: true}),
   )
@@ -43,16 +43,16 @@ export class WrongNetworkComponent {
     toObservable(this.preferenceService.get('walletProvider')),
   ]).pipe(
     map(([ethereum, walletProvider]) =>
-      !!(ethereum as any).isMetaMask && walletProvider === WalletProvider.METAMASK,
+      !!ethereum.isMetaMask && walletProvider === WalletProvider.METAMASK,
     ),
   )
 
-  dismissDialog$ = combineLatest([
+  readonly dismissDialog$ = combineLatest([
     this.currentNetwork$,
     of(this.matDialogData.chainID),
   ]).pipe(
     tap(([currentNetwork, wantedNetwork]) => {
-      if (currentNetwork && BigInt(currentNetwork.chainID!) === wantedNetwork) this.dialogRef.close(true)
+      if (currentNetwork && currentNetwork.chainID!.toString() === wantedNetwork) this.dialogRef.close(true)
     }),
   )
 
@@ -72,5 +72,5 @@ export class WrongNetworkComponent {
 }
 
 export interface WrongNetworkComponentData {
-  chainID: bigint
+  chainID: string
 }

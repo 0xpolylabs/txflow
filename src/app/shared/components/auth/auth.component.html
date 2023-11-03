@@ -3,7 +3,7 @@
         Connect wallet
     </div>
 
-    <div class="flex flex-col mt-8" *ngIf="(injectedWeb3$ | async) as injectedWeb3">
+    <div class="flex flex-col mt-8" *ngIf="(browserProvider$ | async) as injectedWeb3">
         <!-- Injected Web3 login option -->
         <button [appAsyncAction]="connectMetamask$"
                 class="btn-light">

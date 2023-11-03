@@ -37,7 +37,7 @@
         <ng-container *ngIf="requestedNetwork$ | async as requestedNetwork">
             <button *ngIf="isConnectedWithMetamask$ | async"
                     [appAsyncAction]="changeNetwork$(requestedNetwork.chainID)"
-                    text="Switch network" textLoading="Switching network..."
+                    text="Switch network"
                     class="btn-light text-sm flex-1">
             </button>
         </ng-container>

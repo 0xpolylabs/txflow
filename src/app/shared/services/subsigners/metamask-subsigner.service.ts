@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core'
-import { EMPTY, from, Observable, of, throwError } from 'rxjs'
+import { from, Observable, of, throwError } from 'rxjs'
 import { catchError, concatMap, map, switchMap, tap } from 'rxjs/operators'
 import { SignerLoginOpts, Subsigner } from '../signer-login-options'
 import { BrowserProvider, JsonRpcSigner, toQuantity } from 'ethers'
@@ -49,7 +49,7 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
   // }
 
   logout(): Observable<unknown> {
-    return EMPTY
+    return of(undefined)
   }
 
   switchEthereumChain(opts: MetamaskLoginOpts = {}): Observable<unknown> {
@@ -58,6 +58,7 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
     return from(this.subprovider.getSigner()).pipe(
       switchMap(signer => {
         const chainId = toQuantity(opts.wantedNetworkChainID!.toString())
+
         return signer.provider.send('wallet_switchEthereumChain', [{chainId}])
       }),
       catchError(err => {
@@ -81,11 +82,12 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
   }
 
   private registerMetamask(): Observable<JsonRpcSigner> {
-    return of((this.window as any)?.ethereum).pipe(
-      concatMap(web3Provider => web3Provider ?
-        of(new BrowserProvider(web3Provider, 'any')).pipe(
+    return of(this.window.ethereum).pipe(
+      concatMap(browserProvider => browserProvider ?
+        of(new BrowserProvider(browserProvider, 'any')).pipe(
           switchMap(subprovider => {
-            this.subprovider = subprovider
+            this.subprovider = subprovider;
+
             return this.subprovider.getSigner()
           }),
         ) : throwError(() => 'NO_METAMASK')),
