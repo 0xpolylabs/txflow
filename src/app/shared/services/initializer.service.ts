@@ -6,6 +6,7 @@ import { SignerService } from './signer.service'
 import { MetamaskSubsignerService } from './subsigners/metamask-subsigner.service'
 import { JsonRpcSigner } from 'ethers'
 import { WalletDiscoveryService } from './wallet-discovery.service'
+import { WalletConnectSubsignerService } from './subsigners/walletconnect-subsigner.service'
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +15,7 @@ export class InitializerService {
   private readonly signerService = inject(SignerService)
   private readonly walletDiscoveryService = inject(WalletDiscoveryService)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
+  private readonly walletConnectSubsignerService = inject(WalletConnectSubsignerService)
   private readonly preferenceService = inject(PreferenceService)
 
   initSigner(): Observable<unknown> {
@@ -36,6 +38,8 @@ export class InitializerService {
         switch (pref.walletProvider) {
           case WalletProvider.METAMASK:
             return this.signerService.login(this.metamaskSubsignerService, {force: false})
+          case WalletProvider.WALLET_CONNECT:
+            return this.signerService.login(this.walletConnectSubsignerService, {force: false})
           default:
             return this.walletDiscoveryService.discover$().pipe(
               map(wallets => wallets.find(wallet => wallet.info.rdns === pref.walletProvider)),

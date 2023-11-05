@@ -21,6 +21,8 @@
     "@angular/router": "^16.2.0",
     "@ngneat/elf": "^2.4.0",
     "@ngneat/elf-persist-state": "^1.1.6",
+    "@walletconnect/ethereum-provider": "^2.10.4",
+    "@walletconnect/modal": "^2.6.2",
     "ethers": "^6.8.0",
     "reconnecting-websocket": "^4.4.0",
     "rxjs": "~7.8.0",
