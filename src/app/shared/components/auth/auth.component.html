@@ -23,8 +23,8 @@
         </div>
 
         <div *ngIf="wallets.length === 0">
-            <button *ngIf="injectedWeb3$ as injectedWeb3; else noInjectedWeb3"
-                    [appAsyncAction]="connectInjectedProvider$"
+            <button *ngIf="injectedWeb3$ | async; else noInjectedWeb3"
+                    [appAsyncAction]="connectInjectedWeb3$"
                     class="btn-light w-full">
                 <ng-template appAsyncActionReady>
                     Injected Provider

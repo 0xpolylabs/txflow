@@ -47,7 +47,7 @@ export class AuthComponent {
     }
   }
 
-  connectInjectedProvider$ = () => {
+  connectInjectedWeb3$ = () => {
     return this.signer.login(this.metamaskSubsignerService).pipe(
       tap(() => this.afterLoginActions()),
     )
