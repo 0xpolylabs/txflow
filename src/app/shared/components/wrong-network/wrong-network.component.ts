@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
-import { combineLatest, from, merge, Observable, of, shareReplay } from 'rxjs'
+import { combineLatest, from, merge, Observable, of, shareReplay, switchMap } from 'rxjs'
 import { distinctUntilChanged, map, tap } from 'rxjs/operators'
 import { ChainID, Network, Networks } from '../../utils/networks'
 import { SignerService } from '../../services/signer.service'
-import { SessionService } from '../../../store/session.service'
 import { MetamaskSubsignerService } from '../../services/subsigners/metamask-subsigner.service'
 import { PreferenceService, WalletProvider } from '../../../store/preference.service'
 import { toObservable } from '@angular/core/rxjs-interop'
@@ -21,7 +20,6 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
 })
 export class WrongNetworkComponent {
   private readonly signerService = inject(SignerService)
-  private readonly sessionService = inject(SessionService)
   private readonly preferenceService = inject(PreferenceService)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly dialogRef = inject(MatDialogRef<WrongNetworkComponent>)
@@ -29,7 +27,11 @@ export class WrongNetworkComponent {
 
   currentNetwork$: Observable<Partial<Network> | undefined> = merge(
     this.signerService.chainChanged$,
-    from(this.sessionService.signer!.provider.getNetwork()).pipe(map(net => net.chainId)),
+    this.signerService.signer$.pipe(
+      switchMap(signer => signer ?
+        from(signer.provider.getNetwork()).pipe(map(net => net?.chainId))
+        : of(undefined)),
+    ),
   ).pipe(
     distinctUntilChanged(),
     map(chainId => Networks[Number(chainId) as ChainID] || {chainID: Number(chainId)} as Network),
@@ -50,7 +52,7 @@ export class WrongNetworkComponent {
   readonly dismissDialog$ = combineLatest([
     this.currentNetwork$,
     of(this.matDialogData.chainID),
-    this.sessionService.signer$,
+    this.signerService.signer$,
   ]).pipe(
     tap(([currentNetwork, wantedNetwork, signer]) => {
       if (!signer) {

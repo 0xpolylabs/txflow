@@ -18,8 +18,10 @@ $my-theme: mat.define-light-theme(
         )
 );
 
-//@include mat.all-component-themes($my-theme);
+// avoid using mat.all-component-themes() as it slows down the build. prefer adding themes individually.
+// @include mat.all-component-themes($my-theme);
 
+@include mat.core-theme($my-theme);
 @include mat.button-theme($my-theme);
 @include mat.dialog-theme($my-theme);
 @include mat.tooltip-theme($my-theme);

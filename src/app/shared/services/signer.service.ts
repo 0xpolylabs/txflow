@@ -1,13 +1,25 @@
-import { DestroyRef, inject, Injectable, NgZone } from '@angular/core'
-import { defer, from, fromEvent, merge, Observable, of, ReplaySubject, take, takeWhile, throwError, timer } from 'rxjs'
-import { concatMap, delay, finalize, map, switchMap, tap } from 'rxjs/operators'
+import { inject, Injectable, NgZone } from '@angular/core'
+import {
+  BehaviorSubject,
+  defer,
+  from,
+  fromEvent,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  take,
+  takeWhile,
+  throwError,
+  timer,
+} from 'rxjs'
+import { concatMap, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { DialogService } from './dialog.service'
 import { GetSignerOptions, SignerLoginOpts, Subsigner } from './signer-login-options'
 import { WINDOW } from '../providers/browser.provider'
-import { SessionService } from '../../store/session.service'
 import { ErrorService } from './error.service'
 import { AuthComponent } from '../components/auth/auth.component'
-import { BytesLike, JsonRpcApiProvider, JsonRpcSigner, TransactionRequest, TransactionResponse } from 'ethers'
+import { BytesLike, JsonRpcSigner, TransactionRequest, TransactionResponse } from 'ethers'
 import { WrongNetworkComponent, WrongNetworkComponentData } from '../components/wrong-network/wrong-network.component'
 import { PreferenceService } from '../../store/preference.service'
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
@@ -26,57 +38,63 @@ export class SignerService {
   private readonly ngZone = inject(NgZone)
   private readonly dialogService = inject(DialogService)
   private readonly errorService = inject(ErrorService)
-  private readonly sessionService = inject(SessionService)
   private readonly preferenceService = inject(PreferenceService)
-  private readonly destroyRef = inject(DestroyRef)
 
   injectedWeb3$: Observable<any> = defer(() => of(this.window.ethereum))
 
   private subsigner?: Subsigner<any>
-  private accountsChangedSub = new ReplaySubject<string[]>(1)
-  private chainChangedSub = new ReplaySubject<string>(1)
-  private disconnectedSub = new ReplaySubject<void>(1)
-  private listenersSub = new ReplaySubject<JsonRpcApiProvider>(1)
+  private readonly accountsChangedSub = new ReplaySubject<string[]>(1)
+  private readonly chainChangedSub = new ReplaySubject<string>(1)
+  private readonly disconnectedSub = new ReplaySubject<void>(1)
+  private readonly setListenersSub = new ReplaySubject<void>(1)
 
   accountsChanged$ = this.accountsChangedSub.asObservable()
   chainChanged$ = this.chainChangedSub.asObservable()
   disconnected$ = this.disconnectedSub.asObservable()
 
-  listeners$ = this.listenersSub.asObservable().pipe(
-    switchMap(() => merge(
-      fromEvent<string>(this.window.ethereum, 'chainChanged').pipe(
-        switchMap(chainID => timer(200, 0).pipe(
-          switchMap(() => from(this.sessionService.signer!.provider.getNetwork())),
-          takeWhile(network => network.chainId.toString() !== chainID),
-          map(() => chainID),
-          take(1),
-        )),
-        tap(chainID => this.chainChangedSub.next(chainID)),
-      ),
-      fromEvent<string[]>(this.window.ethereum, 'accountsChanged').pipe(
-        tap(accounts => this.accountsChangedSub.next(accounts)),
-      ),
-      fromEvent<void>(this.window.ethereum, 'disconnect').pipe(
-        map(() => this.disconnectedSub.next()),
-      ),
-    )),
-    tap(action => this.ngZone.run(() => {
-      this.sessionService.signer!.provider.getNetwork()
-    })),
-  )
+  private readonly signerSub = new BehaviorSubject<JsonRpcSigner | undefined>(undefined)
+  readonly signer$ = this.signerSub.asObservable()
 
   constructor() {
-    this.subscribeToChanges()
+    this.setListenersSub.asObservable().pipe(
+      switchMap(() => merge(
+        fromEvent<string>(this.window.ethereum, 'chainChanged').pipe(
+          switchMap(chainID => this.waitUntilNetworkChanged$(chainID)),
+          tap(chainID => this.chainChangedSub.next(chainID)),
+        ),
+        fromEvent<string[]>(this.window.ethereum, 'accountsChanged').pipe(
+          tap(accounts => this.accountsChangedSub.next(accounts)),
+        ),
+        fromEvent<void>(this.window.ethereum, 'disconnect').pipe(
+          map(() => this.disconnectedSub.next()),
+        ),
+      )),
+      tap(() => this.ngZone.run(() => {
+      })),
+    ).pipe(
+      takeUntilDestroyed(),
+    ).subscribe()
+
+    this.accountsChanged$.pipe(
+      tap(accounts => {
+        if (accounts[0]) {
+          this.preferenceService.set('walletAddress', accounts[0].toLowerCase())
+        }
+      }),
+      takeUntilDestroyed(),
+    ).subscribe()
   }
 
   get ensureAuth(): Observable<JsonRpcSigner> {
-    return of(this.sessionService.signer).pipe(
+    return this.signer$.pipe(
       concatMap(signer => signer ?
         of(signer) :
         this.loginDialog.pipe(
           concatMap(() => this.ensureAuth),
         ),
       ),
+      // getting a fresh signer in case user changed addresses (metamask)
+      switchMap(signer => signer.provider.getSigner()),
       take(1),
     )
   }
@@ -98,7 +116,7 @@ export class SignerService {
       ...this.dialogService.configDefaults,
     }).afterClosed().pipe(
       concatMap(authCompleted => authCompleted ?
-        this.sessionService.waitUntilLoggedIn$() :
+        this.waitUntilLoggedIn$() :
         throwError(() => 'LOGIN_MODAL_DISMISSED')),
     )
   }
@@ -133,7 +151,7 @@ export class SignerService {
 
     return logout$.pipe(
       finalize(() => {
-        this.sessionService.update({signer: undefined})
+        this.signerSub.next(undefined)
         this.preferenceService.set('walletAddress', '')
         this.preferenceService.set('walletProvider', '')
       }),
@@ -161,30 +179,26 @@ export class SignerService {
     )
   }
 
-  registerListeners(): void {
-    const provider = this.sessionService.signer?.provider as any
-    this.listenersSub.next(provider)
-  }
-
   private setSigner(signer: JsonRpcSigner): void {
-    this.sessionService.update({
-      signer,
-    })
-    this.registerListeners()
+    this.signerSub.next(signer)
+    this.setListenersSub.next()
   }
 
-  private subscribeToChanges(): void {
-    this.accountsChanged$.pipe(
-      tap(accounts => {
-        if (accounts[0]) {
-          this.preferenceService.set('walletAddress', accounts[0].toLowerCase())
-        }
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe()
+  isLoggedIn$ = this.signer$.pipe(
+    map(signer => !!signer),
+  )
 
-    this.listeners$.pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe()
+  waitUntilLoggedIn$(): Observable<boolean> {
+    return this.isLoggedIn$.pipe(filter(isLoggedIn => isLoggedIn), take(1))
+  }
+
+  private waitUntilNetworkChanged$(chainID: string): Observable<string> {
+    return timer(200, 0).pipe(
+      switchMap(() => this.signer$.pipe(take(1))),
+      switchMap(signer => signer ? from(signer.provider.getNetwork()) : of(undefined)),
+      takeWhile(network => network?.chainId.toString() !== chainID),
+      map(() => chainID),
+      take(1),
+    )
   }
 }

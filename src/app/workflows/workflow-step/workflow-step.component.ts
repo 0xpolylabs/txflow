@@ -21,7 +21,6 @@ import { AddrShortPipe } from '../../shared/pipes/addr-short.pipe'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
-import { SessionService } from '../../store/session.service'
 
 @Component({
   selector: 'app-workflow-step',
@@ -38,7 +37,6 @@ export class WorkflowStepComponent {
   private readonly workflowService = inject(WorkflowService)
   private readonly signerService = inject(SignerService)
   private readonly preferenceService = inject(PreferenceService)
-  private readonly sessionService = inject(SessionService)
   private readonly cdr = inject(ChangeDetectorRef)
   private readonly dialogService = inject(DialogService)
   private readonly errorService = inject(ErrorService)
@@ -127,7 +125,7 @@ export class WorkflowStepComponent {
   stepResult$ = combineLatest([
     this.currentStoreStep$,
     this.signerService.chainChanged$.pipe(startWith(undefined)),
-    this.sessionService.signer$,
+    this.signerService.signer$,
   ]).pipe(
     switchMap(([currentStep, _chainChange, signer]) => {
       if (!currentStep || !signer) return of(undefined)
