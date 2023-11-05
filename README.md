@@ -7,7 +7,7 @@ can be shared publicly.
 
 ## Live app
 
-The latest application build is launched and published live [HERE](https://txflow-v1.vercel.app/).
+The latest application build is launched and published live [HERE](https://txflow.vercel.app/).
 
 ## Docs
 
