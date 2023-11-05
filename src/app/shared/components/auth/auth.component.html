@@ -23,9 +23,22 @@
         </div>
 
         <div *ngIf="wallets.length === 0">
-            <p class="text-center text-sm">
-                No wallets found in the browser
-            </p>
+            <button *ngIf="injectedWeb3$ as injectedWeb3; else noInjectedWeb3"
+                    [appAsyncAction]="connectInjectedProvider$"
+                    class="btn-light w-full">
+                <ng-template appAsyncActionReady>
+                    Injected Provider
+                </ng-template>
+
+                <ng-template appAsyncActionLoading>
+                    ...
+                </ng-template>
+            </button>
+            <ng-template #noInjectedWeb3>
+                <p class="text-center text-sm">
+                    No wallets found in the browser
+                </p>
+            </ng-template>
         </div>
     </div>
 </div>

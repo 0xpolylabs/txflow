@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common'
 import { PreferenceService } from '../../../store/preference.service'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
 import { EIP6963ProviderDetail, WalletDiscoveryService } from '../../services/wallet-discovery.service'
+import { of } from 'rxjs'
+import { WINDOW } from '../../providers/browser.provider'
 
 @Component({
   selector: 'app-auth',
@@ -18,12 +20,14 @@ import { EIP6963ProviderDetail, WalletDiscoveryService } from '../../services/wa
 })
 export class AuthComponent {
   private readonly signer = inject(SignerService)
+  private readonly window = inject(WINDOW)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly preferenceService = inject(PreferenceService)
   private readonly walletDiscoveryService = inject(WalletDiscoveryService)
   private readonly dialogRef = inject(MatDialogRef<AuthComponent>, {optional: true})
 
   readonly wallets$ = this.walletDiscoveryService.discover$()
+  readonly injectedWeb3$ = of(this.window.ethereum)
 
   constructor() {
     toObservable(this.preferenceService.get('walletAddress')).pipe(
@@ -41,6 +45,12 @@ export class AuthComponent {
         tap(() => this.afterLoginActions()),
       )
     }
+  }
+
+  connectInjectedProvider$ = () => {
+    return this.signer.login(this.metamaskSubsignerService).pipe(
+      tap(() => this.afterLoginActions()),
+    )
   }
 
   afterLoginActions() {

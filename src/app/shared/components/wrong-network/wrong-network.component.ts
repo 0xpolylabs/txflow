@@ -19,7 +19,6 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
 })
 export class WrongNetworkComponent {
   private readonly signerService = inject(SignerService)
-  private readonly preferenceService = inject(PreferenceService)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly dialogRef = inject(MatDialogRef<WrongNetworkComponent>)
   private readonly matDialogData: WrongNetworkComponentData = inject(MAT_DIALOG_DATA)
