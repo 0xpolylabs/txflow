@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core'
-import { defer, Observable, of } from 'rxjs'
 import { filter, tap } from 'rxjs/operators'
 import { MatDialogRef } from '@angular/material/dialog'
-import { WINDOW } from '../../providers/browser.provider'
 import { SignerService } from '../../services/signer.service'
 import { MetamaskSubsignerService } from '../../services/subsigners/metamask-subsigner.service'
 import { AsyncActionModule } from '../../modules/async-action/async-action.module'
 import { CommonModule } from '@angular/common'
 import { PreferenceService } from '../../../store/preference.service'
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
+import { EIP6963ProviderDetail, WalletDiscoveryService } from '../../services/wallet-discovery.service'
 
 @Component({
   selector: 'app-auth',
@@ -18,23 +17,13 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop'
   standalone: true,
 })
 export class AuthComponent {
-  private readonly window = inject(WINDOW)
   private readonly signer = inject(SignerService)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly preferenceService = inject(PreferenceService)
+  private readonly walletDiscoveryService = inject(WalletDiscoveryService)
   private readonly dialogRef = inject(MatDialogRef<AuthComponent>, {optional: true})
 
-  browserProvider$: Observable<any> = defer(() => of(this.window.ethereum))
-
-  afterLoginActions() {
-    this.dialogRef?.close(true)
-  }
-
-  connectMetamask$ = (): Observable<unknown> => {
-    return this.signer.login(this.metamaskSubsignerService).pipe(
-      tap(() => this.afterLoginActions()),
-    )
-  }
+  readonly wallets$ = this.walletDiscoveryService.discover$()
 
   constructor() {
     toObservable(this.preferenceService.get('walletAddress')).pipe(
@@ -42,5 +31,19 @@ export class AuthComponent {
       tap(() => this.dialogRef?.close(true)),
       takeUntilDestroyed(),
     ).subscribe()
+  }
+
+  connect$ = (wallet: EIP6963ProviderDetail) => {
+    return () => {
+      return this.signer.login(this.metamaskSubsignerService, {
+        eip6963ProviderDetail: wallet,
+      }).pipe(
+        tap(() => this.afterLoginActions()),
+      )
+    }
+  }
+
+  afterLoginActions() {
+    this.dialogRef?.close(true)
   }
 }

@@ -79,7 +79,7 @@ export class PreferenceService {
 
 interface PreferenceStore {
   walletAddress: string;
-  walletProvider: WalletProvider | '';
+  walletProvider: WalletProvider | string | '';
   chainID?: bigint;
 }
 
