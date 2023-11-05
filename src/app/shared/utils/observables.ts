@@ -1,4 +1,4 @@
-import { BehaviorSubject, concat, Observable, of, Subscription, tap, timer } from 'rxjs'
+import { BehaviorSubject, concat, MonoTypeOperatorFunction, Observable, of, Subscription, tap, timer } from 'rxjs'
 import { catchError, map, switchMap } from 'rxjs/operators'
 
 export function withStatus<T>(
@@ -49,6 +49,12 @@ export function withStatus<T>(
       if (!autoRecoverSubscription?.closed) autoRecoverSubscription?.unsubscribe()
     }
   })
+}
+
+export function switchMapTap<T>(next: (value: T) => Observable<unknown>): MonoTypeOperatorFunction<T> {
+  return switchMap(source => next(source).pipe(
+    map(() => source),
+  ))
 }
 
 export interface WithStatus<T> {

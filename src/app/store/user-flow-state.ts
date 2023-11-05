@@ -20,7 +20,7 @@ export class UserFlowStateService {
   })
 
   state$ = (address: string, flowCID: string) => this.store.pipe(
-    select(state => state.state[`${address}/${flowCID}`]),
+    select(state => state.state[`${address.toLowerCase()}/${flowCID}`]),
   )
 
   private readonly stateUpdateSubject = new BehaviorSubject<void>(undefined)

@@ -88,4 +88,5 @@ type StoreValue<K extends StoreKey> = PreferenceStore[K];
 
 export enum WalletProvider {
   METAMASK = 'METAMASK',
+  WALLET_CONNECT = 'WALLET_CONNECT',
 }
