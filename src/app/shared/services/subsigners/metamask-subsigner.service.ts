@@ -6,6 +6,7 @@ import { BrowserProvider, JsonRpcSigner, toQuantity } from 'ethers'
 import { PreferenceService, WalletProvider } from '../../../store/preference.service'
 import { Network, Networks } from '../../utils/networks'
 import { WINDOW } from '../../providers/browser.provider'
+import { EIP6963ProviderDetail } from '../wallet-discovery.service'
 
 
 @Injectable({
@@ -15,20 +16,25 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
   private readonly preferenceService = inject(PreferenceService)
   private readonly window = inject(WINDOW)
 
+  eip1193Provider = undefined
+
   subprovider!: BrowserProvider
 
   login(opts: MetamaskLoginOpts): Observable<JsonRpcSigner> {
+    this.eip1193Provider = opts.eip6963ProviderDetail?.provider ?? this.window.ethereum
+
     return this.registerMetamask().pipe(
       switchMap(() => this.loginGetAddress(opts).pipe(
         tap(address => {
           this.preferenceService.set('walletAddress', address.toLowerCase())
-          this.preferenceService.set('walletProvider', WalletProvider.METAMASK)
+          this.preferenceService.set('walletProvider', opts.eip6963ProviderDetail?.info.rdns ?? WalletProvider.METAMASK)
         }),
       )),
       switchMap(() => this.subprovider.getSigner()),
     )
   }
 
+  // TODO: refactor to work when feature is needed
   // watchAsset(assetAddress: string): Observable<boolean> {
   //     return of(ERC20__factory.connect(assetAddress, this.subprovider.getSigner())).pipe(
   //         switchMap(contract => of(contract).pipe(
@@ -73,17 +79,18 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
           // default:
           //   return throwError(() => 'UNHANDLED_SWITCH_CHAIN_ERROR')
           default:
-            return this.addEthereumChain(opts)        }
+            return this.addEthereumChain(opts)
+        }
       }),
     ).pipe(catchError(() => throwError(() => 'CANNOT_SWITCH_CHAIN')))
   }
 
   private registerMetamask(): Observable<JsonRpcSigner> {
-    return of(this.window.ethereum).pipe(
+    return of(this.eip1193Provider).pipe(
       concatMap(browserProvider => browserProvider ?
         of(new BrowserProvider(browserProvider, 'any')).pipe(
           switchMap(subprovider => {
-            this.subprovider = subprovider;
+            this.subprovider = subprovider
 
             return this.subprovider.getSigner()
           }),
@@ -134,6 +141,7 @@ interface MetamaskLoginOpts extends SignerLoginOpts {
   wallet?: string;
   wantedNetworkChainID?: bigint;
   avoidNetworkChange?: boolean;
+  eip6963ProviderDetail?: EIP6963ProviderDetail;
 }
 
 /**

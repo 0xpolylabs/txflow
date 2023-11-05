@@ -8,6 +8,8 @@ export interface SignerLoginOpts {
 export type GetSignerOptions<S> = S extends Subsigner<infer Opts> ? Opts : never;
 
 export interface Subsigner<O extends Record<any, any>> {
+  eip1193Provider?: any;
+
   login(opts: SignerLoginOpts | O): Observable<JsonRpcSigner>;
 
   logout(): Observable<unknown>;

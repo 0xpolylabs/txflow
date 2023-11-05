@@ -1,9 +1,8 @@
 import { inject, Injectable, NgZone } from '@angular/core'
 import {
   BehaviorSubject,
-  defer,
   from,
-  fromEvent,
+  fromEventPattern,
   merge,
   Observable,
   of,
@@ -16,7 +15,6 @@ import {
 import { concatMap, filter, finalize, map, switchMap, tap } from 'rxjs/operators'
 import { DialogService } from './dialog.service'
 import { GetSignerOptions, SignerLoginOpts, Subsigner } from './signer-login-options'
-import { WINDOW } from '../providers/browser.provider'
 import { ErrorService } from './error.service'
 import { AuthComponent } from '../components/auth/auth.component'
 import { BytesLike, JsonRpcSigner, TransactionRequest, TransactionResponse } from 'ethers'
@@ -34,13 +32,10 @@ declare global {
   providedIn: 'root',
 })
 export class SignerService {
-  private readonly window = inject(WINDOW)
   private readonly ngZone = inject(NgZone)
   private readonly dialogService = inject(DialogService)
   private readonly errorService = inject(ErrorService)
   private readonly preferenceService = inject(PreferenceService)
-
-  injectedWeb3$: Observable<any> = defer(() => of(this.window.ethereum))
 
   private subsigner?: Subsigner<any>
   private readonly accountsChangedSub = new ReplaySubject<string[]>(1)
@@ -55,18 +50,31 @@ export class SignerService {
   private readonly signerSub = new BehaviorSubject<JsonRpcSigner | undefined>(undefined)
   readonly signer$ = this.signerSub.asObservable()
 
+  readonly eip1193Provider$ = this.signer$.pipe(
+    map(() => this.subsigner?.eip1193Provider),
+  )
+
   constructor() {
     this.setListenersSub.asObservable().pipe(
       switchMap(() => merge(
-        fromEvent<string>(this.window.ethereum, 'chainChanged').pipe(
+        fromEventPattern<string>(
+          handler => this.subsigner?.eip1193Provider?.on('chainChanged', handler),
+          handler => this.subsigner?.eip1193Provider?.removeListener('chainChanged', handler),
+        ).pipe(
           switchMap(chainID => this.waitUntilNetworkChanged$(chainID)),
           tap(chainID => this.chainChangedSub.next(chainID)),
         ),
-        fromEvent<string[]>(this.window.ethereum, 'accountsChanged').pipe(
+        fromEventPattern<string[]>(
+          handler => this.subsigner?.eip1193Provider?.on('accountsChanged', handler),
+          handler => this.subsigner?.eip1193Provider?.removeListener('accountsChanged', handler),
+        ).pipe(
           tap(accounts => this.accountsChangedSub.next(accounts)),
         ),
-        fromEvent<void>(this.window.ethereum, 'disconnect').pipe(
-          map(() => this.disconnectedSub.next()),
+        fromEventPattern<void>(
+          handler => this.subsigner?.eip1193Provider?.on('disconnect', handler),
+          handler => this.subsigner?.eip1193Provider?.removeListener('disconnect', handler),
+        ).pipe(
+          tap(() => this.disconnectedSub.next()),
         ),
       )),
       tap(() => this.ngZone.run(() => {

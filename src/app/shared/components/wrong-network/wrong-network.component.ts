@@ -4,8 +4,7 @@ import { distinctUntilChanged, map, tap } from 'rxjs/operators'
 import { ChainID, Network, Networks } from '../../utils/networks'
 import { SignerService } from '../../services/signer.service'
 import { MetamaskSubsignerService } from '../../services/subsigners/metamask-subsigner.service'
-import { PreferenceService, WalletProvider } from '../../../store/preference.service'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { PreferenceService } from '../../../store/preference.service'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog'
 import { CommonModule } from '@angular/common'
 import { AsyncActionModule } from '../../modules/async-action/async-action.module'
@@ -20,7 +19,6 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
 })
 export class WrongNetworkComponent {
   private readonly signerService = inject(SignerService)
-  private readonly preferenceService = inject(PreferenceService)
   private readonly metamaskSubsignerService = inject(MetamaskSubsignerService)
   private readonly dialogRef = inject(MatDialogRef<WrongNetworkComponent>)
   private readonly matDialogData: WrongNetworkComponentData = inject(MAT_DIALOG_DATA)
@@ -40,13 +38,8 @@ export class WrongNetworkComponent {
 
   requestedNetwork$ = of(Networks[Number(this.matDialogData.chainID) as ChainID] || {chainID: Number(this.matDialogData.chainID)} as Network)
 
-  isConnectedWithMetamask$: Observable<boolean> = combineLatest([
-    this.signerService.injectedWeb3$,
-    toObservable(this.preferenceService.get('walletProvider')),
-  ]).pipe(
-    map(([ethereum, walletProvider]) =>
-      !!ethereum.isMetaMask && walletProvider === WalletProvider.METAMASK,
-    ),
+  isConnectedWithMetamask$: Observable<boolean> = this.signerService.eip1193Provider$.pipe(
+    map(ethereum => !!ethereum.isMetaMask),
   )
 
   readonly dismissDialog$ = combineLatest([
