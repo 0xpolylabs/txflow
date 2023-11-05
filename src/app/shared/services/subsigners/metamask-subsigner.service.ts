@@ -23,8 +23,6 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
   login(opts: MetamaskLoginOpts): Observable<JsonRpcSigner> {
     this.eip1193Provider = opts.eip6963ProviderDetail?.provider ?? this.window.ethereum
 
-    console.log('eip1193Provider', this.eip1193Provider)
-
     return this.registerMetamask().pipe(
       switchMap(() => this.loginGetAddress(opts).pipe(
         tap(address => {
@@ -36,6 +34,7 @@ export class MetamaskSubsignerService implements Subsigner<MetamaskLoginOpts> {
     )
   }
 
+  // TODO: refactor to work when feature is needed
   // watchAsset(assetAddress: string): Observable<boolean> {
   //     return of(ERC20__factory.connect(assetAddress, this.subprovider.getSigner())).pipe(
   //         switchMap(contract => of(contract).pipe(
