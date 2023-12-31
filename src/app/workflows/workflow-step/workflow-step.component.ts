@@ -226,4 +226,6 @@ export class WorkflowStepComponent {
       })),
     )
   }
+
+  workflowRequest$ = this.workflowStepService.request$
 }
