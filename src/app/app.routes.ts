@@ -6,6 +6,10 @@ import { WorkflowStepComponent } from './workflows/workflow-step/workflow-step.c
 import { workflowGuard } from './shared/guards/workflow.guard'
 import { workflowStepGuard } from './shared/guards/workflow-step.guard'
 import { AppLayoutComponent } from './shared/components/app-layout/app-layout.component'
+import { RequestNewComponent } from './requests/request-new/request-new.component'
+import { RequestDetailComponent } from './requests/request-detail/request-detail.component'
+import { RequestListComponent } from './requests/request-list/request-list.component'
+import { authGuard } from './shared/guards/auth.guard'
 
 export const routes: Routes = [
   {
@@ -17,6 +21,13 @@ export const routes: Routes = [
         path: 'workflows/:id/steps/:step',
         component: WorkflowStepComponent,
         canActivate: [workflowStepGuard],
+      },
+      {
+        path: 'requests', canMatch: [authGuard()], children: [
+          {path: '', component: RequestListComponent},
+          {path: 'new', component: RequestNewComponent},
+          {path: ':id', component: RequestDetailComponent},
+        ],
       },
     ],
   },

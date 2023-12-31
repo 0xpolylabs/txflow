@@ -20,6 +20,14 @@ import { RouterLink } from '@angular/router'
       <button class="btn mt-4" routerLink="workflows/new">
           Create new workflow
       </button>
+
+      <p class="mt-4">
+          You can also create a request to execute a workflow and follow its progress.
+      </p> 
+      
+      <button class="btn mt-4" routerLink="requests">
+          Requests
+      </button>
   `,
   styles: [],
 })

@@ -38,7 +38,7 @@ import { MatExpansionModule } from '@angular/material/expansion'
                   </mat-accordion>
               </div>
 
-              <button class="btn mt-4" routerLink="steps/1">
+              <button class="btn mt-4" routerLink="steps/1" queryParamsHandling="merge">
                   Start workflow
               </button>
           </ng-container>

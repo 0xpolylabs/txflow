@@ -34,6 +34,7 @@
 
                 <div class="flex gap-2 mt-4">
                     <button class="btn" routerLink="../{{ stepNumber - 1 }}"
+                            queryParamsHandling="merge"
                             [disabled]="stepNumber <= 1">
                         <
                     </button>
@@ -48,6 +49,7 @@
                     </button>
 
                     <button class="btn" routerLink="../{{ stepNumber + 1 }}"
+                            queryParamsHandling="merge"
                             [disabled]="stepNumber >= workflow.steps.length">
                         >
                     </button>

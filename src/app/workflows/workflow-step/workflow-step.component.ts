@@ -21,6 +21,7 @@ import { AddrShortPipe } from '../../shared/pipes/addr-short.pipe'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
+import { WorkflowStepService } from './workflow-step.service'
 
 @Component({
   selector: 'app-workflow-step',
@@ -42,6 +43,7 @@ export class WorkflowStepComponent {
   private readonly errorService = inject(ErrorService)
   private readonly userflowStateService = inject(UserFlowStateService)
   private readonly matSnackBar = inject(MatSnackBar)
+  private readonly workflowStepService = inject(WorkflowStepService)
 
   workflow$: Observable<Workflow> = this.route.params.pipe(
     map(params => params['id']), distinctUntilChanged(),
@@ -56,7 +58,7 @@ export class WorkflowStepComponent {
       try {
         return of(workflow.steps[step - 1])
       } catch (e) {
-        this.router.navigate([`../1`], {relativeTo: this.route})
+        this.router.navigate([`../1`], {relativeTo: this.route, queryParamsHandling: 'merge'})
         return EMPTY
       }
     }),
@@ -92,9 +94,11 @@ export class WorkflowStepComponent {
               )
             }),
             this.errorService.handleError(),
-            tap(() => this.matSnackBar.open('Step finished successfully!', undefined, {
-              duration: 2000, verticalPosition: 'bottom',
-            })),
+            tap(() => {
+              this.matSnackBar.open('Step finished successfully!', undefined, {
+                duration: 2000, verticalPosition: 'bottom',
+              })
+            }),
           )
         }),
       )),
@@ -151,6 +155,8 @@ export class WorkflowStepComponent {
                     success: true,
                   },
                 })
+
+                this.workflowStepService.addLog(`Step ${this.route.snapshot.params['step']} finished successfully.`)
               }),
             )
           }),
@@ -211,7 +217,9 @@ export class WorkflowStepComponent {
           address: address,
           flowCID: this.route.snapshot.params['id'],
         })
-        this.router.navigate(['../1'], {relativeTo: this.route})
+        this.workflowStepService.addLog(`Workflow state has been reset.`)
+
+        this.router.navigate(['../1'], {relativeTo: this.route, queryParamsHandling: 'merge'})
       }),
       tap(() => this.matSnackBar.open('The progress has been cleared.', undefined, {
         duration: 2000, verticalPosition: 'bottom',

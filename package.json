@@ -8,6 +8,7 @@
     "watch": "ng build --watch --configuration development"
   },
   "private": true,
+  "type": "module",
   "dependencies": {
     "@angular/animations": "^16.2.0",
     "@angular/cdk": "^16.2.8",
@@ -21,6 +22,8 @@
     "@angular/router": "^16.2.0",
     "@ngneat/elf": "^2.4.0",
     "@ngneat/elf-persist-state": "^1.1.6",
+    "@vercel/kv": "^1.0.1",
+    "@vercel/node": "^3.0.14",
     "@walletconnect/ethereum-provider": "^2.10.4",
     "@walletconnect/modal": "^2.6.2",
     "ethers": "^6.8.0",
