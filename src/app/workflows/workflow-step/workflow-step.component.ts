@@ -22,6 +22,7 @@ import { ValueCopyComponent } from '../../shared/components/value-copy/value-cop
 import { MatExpansionModule } from '@angular/material/expansion'
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
 import { WorkflowStepService } from './workflow-step.service'
+import jsone from 'json-e'
 
 @Component({
   selector: 'app-workflow-step',
@@ -66,8 +67,21 @@ export class WorkflowStepComponent {
 
   executeStep$ = (): Observable<unknown> => {
     return this.step$.pipe(take(1)).pipe(
-      switchMap(step => this.signerService.ensureNetwork(BigInt(step.chain_id)).pipe(
-        switchMap(signer => {
+      switchMap(stepTemplate => combineLatest([
+        this.signerService.ensureNetwork(BigInt(stepTemplate.chain_id)),
+        this.stepContext$.pipe(take(1)),
+      ]).pipe(
+        switchMap(([signer, stepContext]) => {
+          let step: Step
+          try {
+            step = jsone(stepTemplate, stepContext)
+          } catch (e: any) {
+            this.dialogService.error({
+              message: `Error while parsing step template: ${e.message}`,
+            })
+            throw e
+          }
+
           const tx = {
             chainId: step.chain_id,
             ...(step.to ? {to: step.to} : {}),
@@ -141,8 +155,8 @@ export class WorkflowStepComponent {
         switchMap(step => this.signerService.ensureNetwork(BigInt(step.chain_id)).pipe(
           switchMap(signer => {
             return from(signer.provider.waitForTransaction(tx)).pipe(
-              tap(txResult => {
-                if (txResult?.status !== 1) return
+              tap(txReceipt => {
+                if (txReceipt?.status !== 1) return
 
                 const state = this.userflowStateService.state(signer.address, this.route.snapshot.params['id'])
                 if (state[this.route.snapshot.params['step']]?.success) return
@@ -153,6 +167,7 @@ export class WorkflowStepComponent {
                   stepNumber: this.route.snapshot.params['step'],
                   payload: {
                     success: true,
+                    txReceipt: txReceipt,
                   },
                 })
 
@@ -227,5 +242,35 @@ export class WorkflowStepComponent {
     )
   }
 
+  stepContext$: Observable<StepContext> = combineLatest([
+    this.workflow$,
+    this.stepNumber$,
+    this.step$,
+    this.address$,
+    this.userFlowState$,
+  ]).pipe(
+    map(([workflow, stepNumber, step, userAddress, userFlowState]) => {
+      const previousStepState = userFlowState?.[stepNumber - 1]
+
+      return {
+        workflow,
+        stepNumber,
+        step,
+        userAddress,
+        userFlowState,
+        previousStepState,
+      } as StepContext
+    }),
+  )
+
   workflowRequest$ = this.workflowStepService.request$
+}
+
+interface StepContext {
+  workflow: Workflow
+  stepNumber: number
+  step: Step
+  userAddress: string
+  userFlowState: UserSteps | undefined
+  previousStepState: Partial<Payload> | undefined
 }
