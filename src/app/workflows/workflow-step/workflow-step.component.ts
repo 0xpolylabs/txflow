@@ -72,14 +72,7 @@ export class WorkflowStepComponent {
         this.stepContext$.pipe(take(1)),
       ]).pipe(
         switchMap(([signer, stepContext]) => {
-
-          // stepTemplate.description = "Approve 1 Test Token for staking (gas used in previous: ${previousStep.txReceipt.cumulativeGasUsed})"
-          // stepTemplate.description = "Approve 1 Test Token for staking (gas used in previous: ${userFlowState['1'].txReceipt.cumulativeGasUsed})"
-          // stepTemplate.description = "Approve 1 Test Token for staking (gas used in previous: ${userFlowState['1'].txReceipt.logs[0].data})"
-          // stepTemplate.description = "Approve 1 Test Token for staking (gas used in previous: ${userAddress})"
-          console.log('stepContext', stepContext)
-
-          let step = stepTemplate
+          let step: Step
           try {
             step = jsone(stepTemplate, stepContext)
           } catch (e: any) {
@@ -88,8 +81,6 @@ export class WorkflowStepComponent {
             })
             throw e
           }
-
-          console.log('step', step)
 
           const tx = {
             chainId: step.chain_id,
