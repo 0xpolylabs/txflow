@@ -18,9 +18,13 @@ import { switchMapTap } from '../../shared/utils/observables'
   imports: [CommonModule, ReactiveFormsModule, AsyncActionModule, MatSnackBarModule],
   template: `
       <form [formGroup]="form" class="flex flex-col">
-          <label for="config">Configuration</label>
+          <h1 class="text-2xl mt-8">
+              Workflows | New
+          </h1>
+
+          <label for="config" class="mt-2">Configuration</label>
           <textarea formControlName="config" id="config" rows="15" cols="20"
-                    class="border mt-1"></textarea>
+                    class="app-input mt-1"></textarea>
 
           <ng-container *ngIf="form.dirty && form.controls.config.errors as errors">
               <p class="text-red-500 mt-2 text-sm" *ngIf="errors?.json">

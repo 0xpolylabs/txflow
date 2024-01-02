@@ -20,12 +20,12 @@ import { AsyncActionModule } from '../../shared/modules/async-action/async-actio
           <label for="name" class="mt-2">
               Request name
           </label>
-          <input id="name" formControlName="name" class="border mt-1"/>
+          <input id="name" formControlName="name" class="app-input mt-1"/>
 
           <label for="workflowID" class="mt-2">
               Workflow ID
           </label>
-          <input id="workflowID" formControlName="workflowID" class="border mt-1"/>
+          <input id="workflowID" formControlName="workflowID" class="app-input mt-1"/>
 
           <button type="submit" class="mt-4 btn"
                   [appAsyncAction]="create$"

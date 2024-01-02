@@ -6,13 +6,16 @@ import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
 import { WorkflowService } from '../../shared/services/workflow.service'
 import { distinctUntilChanged } from 'rxjs/operators'
 import { WorkflowPipe } from '../../shared/pipes/workflow.pipe'
+import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 
 @Component({
   selector: 'app-workflow-list-my',
   standalone: true,
-  imports: [CommonModule, RouterLink, WithStatusPipe, WorkflowPipe],
+  imports: [CommonModule, RouterLink, WithStatusPipe, WorkflowPipe, ValueCopyComponent],
   template: `
-      <h1 class="text-2xl">My workflows</h1>
+      <h1 class="text-2xl mt-8">
+          My workflows
+      </h1>
 
       <div class="mt-4" *ngIf="workflows$ | withStatus | async as userWorkflowsRes">
           <ng-container *ngIf="userWorkflowsRes.loading">
@@ -33,22 +36,30 @@ import { WorkflowPipe } from '../../shared/pipes/workflow.pipe'
                       You have no workflows yet.
                   </p>
 
-                  <div class="flex flex-col" *ngFor="let workflowID of workflows" role="listbox">
-                      <div *ngIf="workflowID | workflow | async as workflow"
-                           role="listitem"
-                           class="px-2 py-2 bg-gray-200 rounded">
-                          <a class="hover:underline" routerLink="../{{workflowID}}">
-                              {{ workflow.workflow_name }}
-                          </a>
-                      </div>
+                  <div class="flex flex-col gap-2" role="listbox">
+                      <ng-container *ngFor="let workflowID of workflows">
+                          <div *ngIf="workflowID | workflow | async as workflow"
+                               role="listitem"
+                               class="px-2 py-2 bg-gray-200 rounded">
+                              <a class="hover:underline" routerLink="../{{workflowID}}">
+                                  {{ workflow.workflow_name }}</a>
+                              <app-value-copy [value]="workflowID"/>
+                          </div>
+                      </ng-container>
                   </div>
               </ng-container>
           </ng-container>
       </div>
 
-      <button class="btn mt-4" routerLink="../new">
-          Create new workflow
-      </button>
+      <div class="mt-4 flex gap-2 flex-wrap">
+          <button class="btn" routerLink="../new">
+              Create new workflow
+          </button>
+
+          <button class="btn" routerLink="/requests/new">
+              Create new request
+          </button>
+      </div>
   `,
   styles: [
   ]

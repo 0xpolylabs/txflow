@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common'
 import { RouterModule } from '@angular/router'
 import { RequestService } from '../../shared/services/request.service'
 import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
+import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 
 @Component({
   selector: 'app-request-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, WithStatusPipe],
+  imports: [CommonModule, RouterModule, WithStatusPipe, ValueCopyComponent],
   template: `
       <h1 class="text-2xl mt-8">
           Workflow Requests
@@ -32,8 +33,7 @@ import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
                        class="px-2 py-2 bg-gray-200 rounded">
                       <div>
                           <a class="hover:underline" routerLink="{{ request.requestID }}">
-                              {{ request.name }}
-                          </a>
+                              {{ request.name }}</a>
                       </div>
                   </div>
               </div>

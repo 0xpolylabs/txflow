@@ -7,13 +7,13 @@ import { RouterLink } from '@angular/router'
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-      <p>
+      <p class="mt-8">
           TxFlow is a tool for creating and executing multi-step, multi-chain Ethereum
           transactions. Create reusable workflows and execute them in a simple and predictable way.
       </p>
 
-      <div class="mt-8 grid md:grid-cols-2 gap-4">
-          <div class="col-span-1 flex flex-col gap-2 p-8 border shadow rounded">
+      <div class="mt-8 pb-4 grid md:grid-cols-2 gap-4">
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
               <p class="text-2xl">
                   Learn from the example workflow to get started.
               </p>
@@ -23,7 +23,7 @@ import { RouterLink } from '@angular/router'
               </button>
           </div>
 
-          <div class="col-span-1 flex flex-col gap-2 p-8 border shadow rounded">
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
               <p class="text-2xl">
                   Create your own workflows.
               </p>
@@ -33,7 +33,7 @@ import { RouterLink } from '@angular/router'
               </button>
           </div>
 
-          <div class="col-span-1 flex flex-col gap-2 p-8 border shadow rounded">
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
               <p class="text-2xl">
                   Create a request to execute a workflow and follow its progress.
               </p>
