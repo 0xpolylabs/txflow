@@ -19,7 +19,7 @@ import { switchMapTap } from '../../shared/utils/observables'
   template: `
       <form [formGroup]="form" class="flex flex-col">
           <h1 class="text-2xl mt-8">
-              Workflows | New
+              New Workflow
           </h1>
 
           <label for="config" class="mt-2">Configuration</label>

@@ -13,7 +13,7 @@ import { AsyncActionModule } from '../../shared/modules/async-action/async-actio
   imports: [CommonModule, ReactiveFormsModule, AsyncActionModule, MatSnackBarModule],
   template: `
       <h1 class="text-2xl mt-8">
-          Requests | New
+          New Request
       </h1>
 
       <form [formGroup]="form" class="flex flex-col max-w-screen-sm">
