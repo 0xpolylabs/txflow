@@ -10,12 +10,14 @@ import { RequestNewComponent } from './requests/request-new/request-new.componen
 import { RequestDetailComponent } from './requests/request-detail/request-detail.component'
 import { RequestListComponent } from './requests/request-list/request-list.component'
 import { authGuard } from './shared/guards/auth.guard'
+import { WorkflowListMyComponent } from './workflows/workflow-list-my/workflow-list-my.component'
 
 export const routes: Routes = [
   {
     path: '', component: AppLayoutComponent, children: [
       {path: '', component: HomeComponent, pathMatch: 'full'},
       {path: 'workflows/new', component: WorkflowNewComponent},
+      {path: 'workflows/my', component: WorkflowListMyComponent, canMatch: [authGuard()]},
       {path: 'workflows/:id', component: WorkflowDetailComponent, canMatch: [workflowGuard]},
       {
         path: 'workflows/:id/steps/:step',

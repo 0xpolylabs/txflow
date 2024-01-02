@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { RequestService } from '../../shared/services/request.service'
 import { map, switchMap } from 'rxjs/operators'
 import { Observable, of } from 'rxjs'
-import { WorkflowRequest } from '../../../../types/.requests.api'
+import { WorkflowRequest } from '../../../../types/requests.api'
 
 @Injectable({
   providedIn: 'root',

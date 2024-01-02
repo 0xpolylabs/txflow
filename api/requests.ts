@@ -6,12 +6,13 @@ import {
   CreateWorkflowRequest,
   CreatorListRequest,
   GetAction,
-  GetSingleRequest, GetSingleRequestLogsRequest,
+  GetSingleRequest,
+  GetSingleRequestLogsRequest,
   ListForCreatorRequest,
   PostAction,
   WorkflowRequest,
   WorkflowRequestLog,
-} from 'types/.requests.api'
+} from 'types/requests.api'
 
 export default async function handler(
   request: VercelRequest,

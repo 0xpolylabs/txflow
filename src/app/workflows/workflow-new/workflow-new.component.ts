@@ -9,6 +9,8 @@ import { WorkflowService } from '../../shared/services/workflow.service'
 import { Workflow } from '../../shared/interfaces/workflow'
 import WorkflowTI from '../../shared/interfaces/workflow-ti'
 import { createCheckers } from 'ts-interface-checker'
+import { UserWorkflowService } from '../../shared/services/user-workflow.service'
+import { switchMapTap } from '../../shared/utils/observables'
 
 @Component({
   selector: 'app-workflow-new',
@@ -29,7 +31,7 @@ import { createCheckers } from 'ts-interface-checker'
                   <ul class="list-disc">
                       <li *ngFor="let error of configErrors"
                           class="ml-4">
-                          <b>{{error.path}}</b> {{error.message}}
+                          <b>{{ error.path }}</b> {{ error.message }}
                       </li>
                   </ul>
               </div>
@@ -55,6 +57,7 @@ export class WorkflowNewComponent {
   private readonly workflowService = inject(WorkflowService)
   private readonly matSnackBar = inject(MatSnackBar)
   private readonly router = inject(Router)
+  private readonly userWorkflowService = inject(UserWorkflowService)
 
   form = this.fb.group({
     config: ['', [Validators.required, workflowJsonValidator]],
@@ -62,6 +65,7 @@ export class WorkflowNewComponent {
 
   create$ = () => {
     return this.workflowService.uploadWorkflow(this.form.value.config!).pipe(
+      switchMapTap((id) => this.userWorkflowService.addWorkflow(id)),
       tap(() => this.matSnackBar.open('Workflow created', undefined, {
         duration: 2000, verticalPosition: 'bottom',
       })),

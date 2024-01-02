@@ -12,7 +12,7 @@ import {
   ListForCreatorRequest,
   WorkflowRequest,
   WorkflowRequestLog,
-} from '../../../../types/.requests.api'
+} from '../../../../types/requests.api'
 
 @Injectable({
   providedIn: 'root',
