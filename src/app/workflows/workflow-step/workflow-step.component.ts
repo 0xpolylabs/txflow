@@ -89,7 +89,7 @@ export class WorkflowStepComponent {
             ...(step.data ? {data: step.data} : {}),
           } as TransactionRequest
 
-          return this.dialogService.waitingApproval(from(signer.sendTransaction(tx))).pipe(
+          return this.dialogService.waitingApproval(this.signerService.sendTransaction(tx)).pipe(
             switchMap(tx => {
               this.userflowStateService.updateState({
                 address: signer.address,
@@ -101,13 +101,14 @@ export class WorkflowStepComponent {
               })
 
               return this.dialogService.waitingTransaction({
-                  obs$: from(signer.provider.waitForTransaction(tx.hash)),
+                  obs$: from(signer.provider.waitForTransaction(tx.hash)).pipe(
+                    this.errorService.handleError(),
+                  ),
                   network: Networks[Number(step.chain_id) as ChainID],
                   tx: tx.hash,
                 },
               )
             }),
-            this.errorService.handleError(),
             tap(() => {
               this.matSnackBar.open('Step finished successfully!', undefined, {
                 duration: 2000, verticalPosition: 'bottom',
