@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 import { RequestService } from '../../shared/services/request.service'
 import { map, switchMap } from 'rxjs/operators'
 import { Observable, of } from 'rxjs'
-import { WorkflowRequest } from '../../../../types/requests.api'
+import { LogAction, LogPayload, WorkflowRequest } from '../../../../types/requests.api'
 
 @Injectable({
   providedIn: 'root',
@@ -12,11 +12,11 @@ export class WorkflowStepService {
   private readonly route = inject(ActivatedRoute)
   private readonly requestService = inject(RequestService)
 
-  addLog(message: string) {
+  addLog(message: string, action: LogAction, payload?: Partial<LogPayload>) {
     const requestID = this.route.snapshot.queryParams['requestID']
     if (!requestID) return
 
-    this.requestService.addLog(requestID, message).subscribe()
+    this.requestService.addLog(requestID, message, action, payload).subscribe()
   }
 
   request$: Observable<WorkflowRequest | undefined> = this.route.queryParams.pipe(

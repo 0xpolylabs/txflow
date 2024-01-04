@@ -41,9 +41,22 @@ export interface AddLogRequest {
   action: 'addLog'
   requestID: string
   message: string
+  logAction: LogAction,
+  payload?: Partial<LogPayload>
 }
 
 export interface WorkflowRequestLog {
   message: string,
+  action: LogAction,
+  payload?: Partial<LogPayload>,
   timestamp: number,
 }
+
+export interface LogPayload {
+  userAddress: string,
+  txHash: string,
+  chainID: string,
+  stepNumber: number,
+}
+
+export type LogAction = 'STEP_COMPLETED' | 'WORKFLOW_RESET'

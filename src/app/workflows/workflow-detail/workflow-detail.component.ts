@@ -1,15 +1,27 @@
 import { Component, inject } from '@angular/core'
 import { CommonModule, JsonPipe } from '@angular/common'
-import { ActivatedRoute, RouterLink } from '@angular/router'
-import { switchMap } from 'rxjs/operators'
+import { ActivatedRoute, Router, RouterLink } from '@angular/router'
+import { map, switchMap } from 'rxjs/operators'
 import { WorkflowService } from '../../shared/services/workflow.service'
 import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
 import { MatExpansionModule } from '@angular/material/expansion'
+import { WorkflowStepService } from '../workflow-step/workflow-step.service'
+import {
+  AsyncActionLoadingDirective,
+  AsyncActionReadyDirective,
+} from '../../shared/modules/async-action/async-action.directive'
+import { RequestService } from '../../shared/services/request.service'
+import { AsyncActionComponent } from '../../shared/modules/async-action/async-action.component'
+import { tap } from 'rxjs'
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
 
 @Component({
   selector: 'app-workflow-detail',
   standalone: true,
-  imports: [CommonModule, JsonPipe, WithStatusPipe, RouterLink, MatExpansionModule],
+  imports: [
+    CommonModule, JsonPipe, WithStatusPipe, RouterLink, MatExpansionModule, MatSnackBarModule,
+    AsyncActionLoadingDirective, AsyncActionReadyDirective, AsyncActionComponent,
+  ],
   template: `
       <ng-container *ngIf="workflow$ | withStatus | async as workflowRes">
           <ng-container *ngIf="workflowRes.value as workflow">
@@ -38,9 +50,27 @@ import { MatExpansionModule } from '@angular/material/expansion'
                   </mat-accordion>
               </div>
 
-              <button class="btn mt-4" routerLink="steps/1" queryParamsHandling="merge">
-                  Start workflow
-              </button>
+
+              <div class="flex gap-2 flex-wrap mt-4">
+                  <button class="btn" routerLink="steps/1" queryParamsHandling="merge">
+                      Start workflow
+                  </button>
+
+                  <ng-container *ngIf="(workflowRequest$ | async) === undefined">
+                      <button *ngIf="workflowID$ | async as workflowID"
+                              [appAsyncAction]="createRequest$(workflowID)"
+                              class="btn">
+                          <ng-template appAsyncActionReady>
+                              Create request
+                          </ng-template>
+
+                          <ng-template appAsyncActionLoading>
+                              Creating request...
+                          </ng-template>
+                      </button>
+
+                  </ng-container>
+              </div>
           </ng-container>
 
           <ng-container *ngIf="workflowRes.error as error">
@@ -56,8 +86,24 @@ import { MatExpansionModule } from '@angular/material/expansion'
 export class WorkflowDetailComponent {
   private readonly route = inject(ActivatedRoute)
   private readonly workflowService = inject(WorkflowService)
+  private readonly workflowStepService = inject(WorkflowStepService)
+  private readonly requestService = inject(RequestService)
+  private readonly matSnackBar = inject(MatSnackBar)
+  private readonly router = inject(Router)
 
-  workflow$ = this.route.params.pipe(
-    switchMap(params => this.workflowService.getWorkflow(params['id'])),
+  workflowID$ = this.route.params.pipe(map(params => params['id']))
+  workflow$ = this.workflowID$.pipe(
+    switchMap(id => this.workflowService.getWorkflow(id)),
   )
+
+  workflowRequest$ = this.workflowStepService.request$
+
+  createRequest$ = (workflowID: string) => {
+    return () => {
+      return this.requestService.createWorkflowRequest(workflowID).pipe(
+        tap(() => this.matSnackBar.open('Request created', 'Close', {duration: 3000})),
+        tap((res) => this.router.navigate([`/requests/${res.requestID}`])),
+      )
+    }
+  }
 }

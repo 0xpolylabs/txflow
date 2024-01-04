@@ -1,17 +1,22 @@
 import { Component, inject } from '@angular/core'
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router'
+import { CommonModule } from '@angular/common'
+import { Router, RouterLink } from '@angular/router'
 import { UserWorkflowService } from '../../shared/services/user-workflow.service'
 import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
-import { WorkflowService } from '../../shared/services/workflow.service'
-import { distinctUntilChanged } from 'rxjs/operators'
 import { WorkflowPipe } from '../../shared/pipes/workflow.pipe'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
+import { AsyncActionModule } from '../../shared/modules/async-action/async-action.module'
+import { RequestService } from '../../shared/services/request.service'
+import { tap } from 'rxjs'
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'
 
 @Component({
   selector: 'app-workflow-list-my',
   standalone: true,
-  imports: [CommonModule, RouterLink, WithStatusPipe, WorkflowPipe, ValueCopyComponent],
+  imports: [
+    CommonModule, RouterLink, WithStatusPipe, WorkflowPipe,
+    ValueCopyComponent, AsyncActionModule, MatSnackBarModule,
+  ],
   template: `
       <h1 class="text-2xl mt-8">
           My workflows
@@ -40,10 +45,25 @@ import { ValueCopyComponent } from '../../shared/components/value-copy/value-cop
                       <ng-container *ngFor="let workflowID of workflows">
                           <div *ngIf="workflowID | workflow | async as workflow"
                                role="listitem"
-                               class="px-2 py-2 bg-gray-200 rounded">
-                              <a class="hover:underline" routerLink="../{{workflowID}}">
-                                  {{ workflow.workflow_name }}</a>
-                              <app-value-copy [value]="workflowID"/>
+                               class="px-2 py-2 flex justify-between bg-gray-200 rounded">
+                              <div>
+                                  <a class="hover:underline" routerLink="../{{workflowID}}">
+                                      {{ workflow.workflow_name }}</a>
+                                  <app-value-copy [value]="workflowID"/>
+                              </div>
+
+                              <div>
+                                  <button [appAsyncAction]="createRequest$(workflowID)"
+                                          class="text-sm">
+                                      <ng-template appAsyncActionReady>
+                                          Create request
+                                      </ng-template>
+
+                                      <ng-template appAsyncActionLoading>
+                                          Creating request...
+                                      </ng-template>
+                                  </button>
+                              </div>
                           </div>
                       </ng-container>
                   </div>
@@ -61,16 +81,20 @@ import { ValueCopyComponent } from '../../shared/components/value-copy/value-cop
           </button>
       </div>
   `,
-  styles: [
-  ]
+  styles: [],
 })
 export class WorkflowListMyComponent {
   private readonly userWorkflowService = inject(UserWorkflowService)
-  private readonly workflowService = inject(WorkflowService)
+  private readonly requestService = inject(RequestService)
+  private readonly matSnackBar = inject(MatSnackBar)
+  private readonly router = inject(Router)
 
   workflows$ = this.userWorkflowService.getWorkflows()
 
-  getWorkflow$ = (id: string) => this.workflowService.getWorkflow(id).pipe(
-    distinctUntilChanged()
-  )
+  createRequest$ = (workflowID: string) => {
+    return () => this.requestService.createWorkflowRequest(workflowID).pipe(
+      tap(() => this.matSnackBar.open('Request created', 'Close', {duration: 3000})),
+      tap((res) => this.router.navigate([`/requests/${res.requestID}`])),
+    )
+  }
 }

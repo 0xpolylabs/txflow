@@ -94,10 +94,12 @@ export default async function handler(
 
       return response.status(201).json({requestID, workflowID} as CreatorListRequest)
     } else if (action === 'addLog') {
-      const {requestID, message}: AddLogRequest = request.body
+      const {requestID, message, logAction, payload}: AddLogRequest = request.body
 
       const workflowRequestLog: WorkflowRequestLog = {
         message,
+        action: logAction,
+        payload,
         timestamp: Date.now(),
       }
       await kv.lpush<WorkflowRequestLog>(`requests:${requestID}:logs`, workflowRequestLog)

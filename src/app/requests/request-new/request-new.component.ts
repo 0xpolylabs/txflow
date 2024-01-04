@@ -50,8 +50,8 @@ export class RequestNewComponent {
 
   create$ = () => {
     return this.requestService.createWorkflowRequest(
-      this.form.value.name!,
       this.form.value.workflowID!,
+      this.form.value.name!,
     ).pipe(
       tap(() => this.matSnackBar.open('Request created', 'Close', {duration: 3000})),
       tap(() => this.router.navigate(['/requests'])),

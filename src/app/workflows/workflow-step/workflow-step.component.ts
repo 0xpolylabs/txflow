@@ -172,7 +172,17 @@ export class WorkflowStepComponent {
                   },
                 })
 
-                this.workflowStepService.addLog(`Step ${this.route.snapshot.params['step']} finished successfully.`)
+                const stepNumber = Number(this.route.snapshot.params['step'])
+                this.workflowStepService.addLog(
+                  `Step ${stepNumber} completed.`,
+                  'STEP_COMPLETED',
+                  {
+                    userAddress: signer.address,
+                    txHash: txReceipt.hash,
+                    chainID: step.chain_id,
+                    stepNumber: stepNumber,
+                  },
+                )
               }),
             )
           }),
@@ -233,7 +243,11 @@ export class WorkflowStepComponent {
           address: address,
           flowCID: this.route.snapshot.params['id'],
         })
-        this.workflowStepService.addLog(`Workflow state has been reset.`)
+        this.workflowStepService.addLog(
+          `Workflow state has been reset.`,
+          'WORKFLOW_RESET',
+          {userAddress: address},
+        )
 
         this.router.navigate(['../1'], {relativeTo: this.route, queryParamsHandling: 'merge'})
       }),

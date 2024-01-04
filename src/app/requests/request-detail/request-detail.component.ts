@@ -8,11 +8,14 @@ import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
 import { WorkflowService } from '../../shared/services/workflow.service'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
 import { WINDOW } from '../../shared/providers/browser.provider'
+import { AddrShortPipe } from '../../shared/pipes/addr-short.pipe'
+import { ExplorerLinkComponent } from '../../shared/components/explorer-link/explorer-link.component'
+import { NetworkPipe } from '../../shared/pipes/network.pipe'
 
 @Component({
   selector: 'app-request-detail',
   standalone: true,
-  imports: [CommonModule, WithStatusPipe, RouterLink, ValueCopyComponent],
+  imports: [CommonModule, WithStatusPipe, RouterLink, ValueCopyComponent, AddrShortPipe, ExplorerLinkComponent, NetworkPipe],
   template: `
       <h1 class="text-2xl mt-8">
           Workflow Request Details
@@ -31,12 +34,12 @@ import { WINDOW } from '../../shared/providers/browser.provider'
               <h2 class="mt-4 text-lg font-semibold">
                   {{ request.name }}
               </h2>
-              
+
               <p class="mt-2">
                   Link for execution
                   <app-value-copy [value]="getLinkForExecution(request.requestID, request.workflowID)"/>
               </p>
-              
+
               <div>
                   Creator address: {{ request.creatorAddress }}
               </div>
@@ -86,7 +89,28 @@ import { WINDOW } from '../../shared/providers/browser.provider'
                       <div role="listbox" class="flex flex-col gap-2 mt-2">
                           <div role="listitem" class="px-2 py-1 bg-gray-200 rounded"
                                *ngFor="let log of requestLogs">
-                              <span>{{ log.message }}</span>
+                              <p>{{ log.message }}</p>
+
+                              <div *ngIf="log.payload?.txHash as txHash"
+                                   class="flex text-sm items-baseline">
+                                  <span>Transaction: {{ txHash | addrShort:6:0 }}</span>
+                                  <app-value-copy [value]="txHash"/>
+                                  <app-explorer-link
+                                          *ngIf="log.payload?.chainID | network as network"
+                                          [network]="network" [type]="'tx'"
+                                          [value]="txHash"/>
+                              </div>
+
+                              <div *ngIf="log.payload?.userAddress as userAddress"
+                                   class="flex text-sm items-baseline">
+                                  <span>User address: {{ userAddress | addrShort }}</span>
+                                  <app-value-copy [value]="userAddress"/>
+                                  <app-explorer-link
+                                          *ngIf="log.payload?.chainID | network as network"
+                                          [network]="network" [type]="'address'"
+                                          [value]="userAddress"/>
+                              </div>
+
                               <p class="text-right text-xs italic">{{ log.timestamp | date:'medium' }}</p>
                           </div>
                       </div>

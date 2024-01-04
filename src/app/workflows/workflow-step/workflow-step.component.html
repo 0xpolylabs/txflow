@@ -4,7 +4,9 @@
       <ng-container *ngIf="step$ | async as step">
         <div class="flex justify-between mt-8">
           <span class="text-2xl">
-            <a class="underline" routerLink="../..">{{ workflow.workflow_name }}</a>
+            <a class="underline" routerLink="../.." queryParamsHandling="merge">
+              {{ workflow.workflow_name }}
+            </a>
           </span>
           <span class="">
             Step {{ stepNumber }} / {{ workflow.steps.length }}
