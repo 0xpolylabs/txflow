@@ -3,7 +3,6 @@ import { EMPTY, Observable, throwError } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
 import { HttpErrorResponse } from '@angular/common/http'
 import { DialogService } from './dialog.service'
-import { isError } from 'ethers'
 
 @Injectable({
   providedIn: 'root',

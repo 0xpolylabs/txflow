@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router'
 import { RequestService } from '../../shared/services/request.service'
 import { WithStatusPipe } from '../../shared/pipes/with-status.pipe'
 import { ValueCopyComponent } from '../../shared/components/value-copy/value-copy.component'
+import { switchMap } from 'rxjs'
+import { PreferenceService } from '../../store/preference.service'
 
 @Component({
   selector: 'app-request-list',
@@ -46,6 +48,9 @@ import { ValueCopyComponent } from '../../shared/components/value-copy/value-cop
 })
 export class RequestListComponent {
   private readonly requestService = inject(RequestService)
+  private readonly preferenceService = inject(PreferenceService)
 
-  readonly requests$ = this.requestService.getRequestsForCreator()
+  readonly requests$ = this.preferenceService.address$().pipe(
+    switchMap(() => this.requestService.getRequestsForCreator()),
+  )
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core'
+import { Component, inject } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterModule } from '@angular/router'
 import { AddrShortPipe } from '../../pipes/addr-short.pipe'
@@ -6,9 +6,7 @@ import { ExplorerLinkComponent } from '../explorer-link/explorer-link.component'
 import { NetworkPipe } from '../../pipes/network.pipe'
 import { ValueCopyComponent } from '../value-copy/value-copy.component'
 import { SignerService } from '../../services/signer.service'
-import { distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators'
-import { Observable } from 'rxjs'
-import { toObservable } from '@angular/core/rxjs-interop'
+import { switchMap } from 'rxjs/operators'
 import { PreferenceService } from '../../../store/preference.service'
 import { AsyncActionModule } from '../../modules/async-action/async-action.module'
 
@@ -36,9 +34,10 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
                           *ngIf="(signerProviderNetwork$ | async)?.chainId | network as network"
                           [network]="network" [type]="'address'"
                           [value]="address"/>
+
                   <div class="w-px h-4 self-center mx-1 my-1 bg-gray-400"></div>
 
-                  <a [routerLink]="[]" [appAsyncAction]="logout$" text="disconnect">
+                  <a [routerLink]="[]" [appAsyncAction]="logout$">
                       <ng-template appAsyncActionReady appAsyncActionLoading>
                           <span class="flex items-center p-1.5 bg-gray-200 rounded-full">
                               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
@@ -62,7 +61,6 @@ import { AsyncActionModule } from '../../modules/async-action/async-action.modul
 export class AppLayoutComponent {
   private readonly signerService = inject(SignerService)
   private readonly preferenceService = inject(PreferenceService)
-  private readonly cdr = inject(ChangeDetectorRef)
 
   logout$ = () => {
     return this.signerService.logout()
@@ -72,9 +70,5 @@ export class AppLayoutComponent {
     switchMap(signer => signer.provider.getNetwork()),
   )
 
-  address$: Observable<string> = toObservable(this.preferenceService.get('walletAddress')).pipe(
-    tap(() => this.cdr.markForCheck()),
-    map(v => v as string),
-    distinctUntilChanged(),
-  )
+  address$ = this.preferenceService.address$()
 }
