@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core'
   standalone: true,
 })
 export class AddrShortPipe implements PipeTransform {
-  transform(value: any, startChars = 6, endChars = 4): any {
+  transform(value: any, startChars = 4, endChars = 4): any {
     if (!value) {
       return ''
     }
@@ -16,6 +16,6 @@ export class AddrShortPipe implements PipeTransform {
       return address
     }
 
-    return `${address.substring(0, startChars)}...${address.substring(address.length - endChars, address.length)}`
+    return `${address.substring(0, startChars + 2)}...${address.substring(address.length - endChars, address.length)}`
   }
 }

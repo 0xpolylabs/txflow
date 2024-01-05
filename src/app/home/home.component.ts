@@ -7,19 +7,42 @@ import { RouterLink } from '@angular/router'
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-      <p>
+      <p class="mt-8">
           TxFlow is a tool for creating and executing multi-step, multi-chain Ethereum
           transactions. Create reusable workflows and execute them in a simple and predictable way.
       </p>
 
-      <p class="mt-4">
-          Check out the <a routerLink="/workflows/QmTDyDyaDuVq5XeLye7AeJFZRvMVE4uQDde8YwS8Cv2wee" class="underline">example</a>
-          workflow to get started.
-      </p>
+      <div class="mt-8 pb-4 grid md:grid-cols-2 gap-4">
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
+              <p class="text-2xl">
+                  Learn from the example workflow to get started.
+              </p>
 
-      <button class="btn mt-4" routerLink="workflows/new">
-          Create new workflow
-      </button>
+              <button class="btn mt-4 self-end" routerLink="workflows/QmTDyDyaDuVq5XeLye7AeJFZRvMVE4uQDde8YwS8Cv2wee">
+                  See example
+              </button>
+          </div>
+
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
+              <p class="text-2xl">
+                  Create your own workflows.
+              </p>
+
+              <button class="btn mt-4 self-end" routerLink="workflows/my">
+                  My workflows
+              </button>
+          </div>
+
+          <div class="col-span-1 flex flex-col justify-between gap-2 p-6 border shadow rounded">
+              <p class="text-2xl">
+                  Create a request to execute a workflow and follow its progress.
+              </p>
+
+              <button class="btn mt-4 self-end" routerLink="requests">
+                  Requests
+              </button>
+          </div>
+      </div>
   `,
   styles: [],
 })

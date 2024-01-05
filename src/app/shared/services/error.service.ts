@@ -21,23 +21,23 @@ export class ErrorService {
       let errorRes = err as HttpErrorResponse
       let action$: Observable<any> = throwError(err)
 
+      console.error(err)
+
       if (errorRes.error instanceof ErrorEvent) { // client-side error
         return action$
-      } else if ((errorRes as any).reason) { // Internal JSON-RPC error
-        const message = (errorRes as any).reason
-
-        if (message !== 'rejected') {
-          action$ = this.displayMessage(message)
+      } else if (err.code) {
+        if (err?.message?.includes('cannot estimate gas')) {
+          action$ = this.displayMessage(this.outOfGasMessage)
+        } else if (err?.message?.includes('missing revert data')) {
+          action$ = this.displayMessage('Unknown error')
         }
-      } else if (err?.message?.includes('cannot estimate gas')) {
-        action$ = this.displayMessage(this.outOfGasMessage)
       }
 
       if (completeAfterAction) {
         return action$.pipe(switchMap(() => EMPTY))
       } else {
         if (rethrowAfterAction) {
-          return action$.pipe(switchMap(() => throwError(err)))
+          return action$.pipe(switchMap(() => throwError(() => err)))
         } else {
           return action$
         }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core'
 import { createStore, select, setProp, withProps } from '@ngneat/elf'
 import { localStorageStrategy, persistState } from '@ngneat/elf-persist-state'
 import { BehaviorSubject } from 'rxjs'
+import { TransactionReceipt } from 'ethers'
 
 @Injectable({
   providedIn: 'root',
@@ -78,5 +79,6 @@ export interface UserSteps {
 
 export interface Payload {
   txHash: string,
+  txReceipt: TransactionReceipt,
   success: boolean,
 }
