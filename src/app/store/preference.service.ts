@@ -1,11 +1,10 @@
-import type { Signal } from '@angular/core'
-import { computed, Injectable } from '@angular/core'
+import { ChangeDetectorRef, computed, inject, Injectable, Signal } from '@angular/core'
 import { createStore, setProp, withProps } from '@ngneat/elf'
 import { localStorageStrategy, persistState } from '@ngneat/elf-persist-state'
 import type { Observable } from 'rxjs'
 import { last, takeWhile } from 'rxjs'
-import { map } from 'rxjs/operators'
-import { toSignal } from '@angular/core/rxjs-interop'
+import { distinctUntilChanged, map, tap } from 'rxjs/operators'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 
 @Injectable({
   providedIn: 'root',
@@ -73,6 +72,16 @@ export class PreferenceService {
       map(store => store[key]),
       takeWhile(oldValue => differentValue(oldValue), true),
       last(),
+    )
+  }
+
+  address$ = (): Observable<string> => {
+    const cdr = inject(ChangeDetectorRef)
+
+    return toObservable(this.get('walletAddress')).pipe(
+      tap(() => cdr.markForCheck()),
+      map(v => v as string),
+      distinctUntilChanged(),
     )
   }
 }
